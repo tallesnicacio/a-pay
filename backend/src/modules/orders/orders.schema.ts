@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { paginationSchema } from '../../shared/utils/pagination';
 
 export const CreateOrderItemSchema = z.object({
   productId: z.string().uuid(),
@@ -19,6 +20,8 @@ export const GetOrdersQuerySchema = z.object({
   startDate: z.string().optional(),
   endDate: z.string().optional(),
   search: z.string().optional(),
+  // Paginação
+  ...paginationSchema.shape,
 });
 
 export const MarkPaidSchema = z.object({

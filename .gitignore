@@ -33,9 +33,18 @@ Thumbs.db
 *.db
 *.db-journal
 
-# Prisma
-prisma/migrations/
-!prisma/migrations/.gitkeep
+# Prisma - Versionar migrations para produção
+# prisma/migrations/
+# !prisma/migrations/.gitkeep
+
+# SSH Keys (NEVER COMMIT)
+*.pem
+*.key
+id_rsa*
+id_ed25519*
+id_ecdsa*
+sshkey*
+*.pub
 
 # Logs
 logs/

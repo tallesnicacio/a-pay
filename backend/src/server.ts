@@ -13,18 +13,20 @@ import { reportsRoutes } from './modules/reports/reports.routes';
 import { adminRoutes } from './modules/admin/admin.routes';
 import ssePlugin from './plugins/sse';
 import logger from './shared/utils/logger';
+import { env } from './shared/config/env';
 
 // Load environment variables
 config();
 
-const PORT = Number(process.env.PORT) || 3000;
-const HOST = process.env.HOST || '0.0.0.0';
-const NODE_ENV = process.env.NODE_ENV || 'development';
+// Validate environment variables at startup
+const PORT = env.PORT;
+const HOST = env.HOST;
+const NODE_ENV = env.NODE_ENV;
 
 // Create Fastify instance
 const fastify = Fastify({
   logger: {
-    level: process.env.LOG_LEVEL || 'info',
+    level: env.LOG_LEVEL,
     transport:
       NODE_ENV === 'development'
         ? {
@@ -44,7 +46,7 @@ async function registerPlugins() {
   await fastify.register(errorHandler);
 
   // CORS - Support multiple origins (comma-separated in .env)
-  const corsOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173')
+  const corsOrigins = env.CORS_ORIGIN
     .split(',')
     .map(origin => origin.trim());
 
