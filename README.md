@@ -4,6 +4,16 @@ Sistema multi-estabelecimento para controle de comandas e cozinha, focado em ope
 
 ## Características
 
+## ✨ Melhorias Recentes
+
+- **🔒 Validação de Env**: Variáveis de ambiente validadas com Zod no startup
+- **📚 Swagger/OpenAPI**: Documentação interativa da API em /docs
+- **🛡️ Error Handling**: Tratamento específico de erros do Prisma
+- **📄 Paginação**: Sistema de paginação reutilizável para listagens
+- **🔐 JWT Ready**: Preparado para implementação de JWT ou Supabase Auth
+
+Veja [IMPROVEMENTS.md](IMPROVEMENTS.md) para detalhes completos.
+
 - **Multi-tenant**: Isolamento completo de dados por estabelecimento
 - **Módulos ativáveis**: Comanda e Cozinha podem ser ativados/desativados por estabelecimento
 - **PWA**: Funciona como app no celular, com suporte a offline

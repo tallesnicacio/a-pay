@@ -3,6 +3,8 @@ import { config } from 'dotenv';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
+import swagger from '@fastify/swagger';
+import swaggerUi from '@fastify/swagger-ui';
 import { prisma } from './shared/database/prisma.service';
 import { errorHandler } from './plugins/error-handler';
 import { authRoutes } from './modules/auth/auth.routes';
@@ -44,6 +46,35 @@ const fastify = Fastify({
 async function registerPlugins() {
   // Error handler
   await fastify.register(errorHandler);
+  // Swagger/OpenAPI Documentation
+  await fastify.register(swagger, {
+    openapi: {
+      info: {
+        title: 'A-Pay API',
+        description: 'Sistema de controle de pedidos multi-estabelecimento',
+        version: '1.0.0',
+      },
+      tags: [
+        { name: 'health', description: 'Health check' },
+        { name: 'auth', description: 'Autenticação' },
+        { name: 'products', description: 'Produtos' },
+        { name: 'orders', description: 'Comandas' },
+        { name: 'kitchen', description: 'Cozinha' },
+        { name: 'reports', description: 'Relatórios' },
+        { name: 'admin', description: 'Administração' },
+      ],
+    },
+  });
+
+  await fastify.register(swaggerUi, {
+    routePrefix: '/docs',
+    uiConfig: {
+      docExpansion: 'list',
+      deepLinking: true,
+    },
+    staticCSP: true,
+  });
+
 
   // CORS - Support multiple origins (comma-separated in .env)
   const corsOrigins = env.CORS_ORIGIN
@@ -103,6 +134,7 @@ async function registerRoutes() {
       timestamp: new Date().toISOString(),
       endpoints: {
         health: '/health',
+        docs: '/docs',
         auth: '/auth/*',
         products: '/products',
         orders: '/orders',
@@ -133,7 +165,7 @@ async function start() {
     logger.info(`🚀 A-Pay API running on http://${HOST}:${PORT}`);
     logger.info(`📊 Environment: ${NODE_ENV}`);
     logger.info(`🔗 Health check: http://${HOST}:${PORT}/health`);
-    logger.info(`📚 API docs: http://${HOST}:${PORT}/`);
+    logger.info(`📚 API docs: http://${HOST}:${PORT}/docs`);
   } catch (err) {
     fastify.log.error(err);
     process.exit(1);
