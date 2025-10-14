@@ -86,6 +86,11 @@ export function ReportsPage() {
     }
   };
 
+  // Helper function para formatar valores monetários com segurança
+  const formatCurrency = (value: number | null | undefined): string => {
+    return `R$ ${(value ?? 0).toFixed(2)}`;
+  };
+
   // Carregar ao trocar filtros
   useEffect(() => {
     if (reportType === 'daily') {
@@ -286,7 +291,7 @@ export function ReportsPage() {
                         </div>
                       </div>
                       <p className="font-semibold text-green-600">
-                        R$ {product.revenue.toFixed(2)}
+                        {formatCurrency(product.revenue)}
                       </p>
                     </div>
                   ))}
@@ -467,7 +472,7 @@ export function ReportsPage() {
                       </div>
                     </div>
                     <p className="font-semibold text-green-600">
-                      R$ {product.revenue.toFixed(2)}
+                      {formatCurrency(product.revenue)}
                     </p>
                   </div>
                 ))}

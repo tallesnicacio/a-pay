@@ -12,7 +12,7 @@ export const createEstablishmentSchema = z.object({
   hasKitchen: z.boolean().default(true),
   hasOrders: z.boolean().default(true),
   hasReports: z.boolean().default(true),
-  isActive: z.boolean().default(true),
+  active: z.boolean().default(true),
 });
 
 export type CreateEstablishmentBody = z.infer<typeof createEstablishmentSchema>;
@@ -30,7 +30,7 @@ export const updateEstablishmentSchema = z.object({
   hasKitchen: z.boolean().optional(),
   hasOrders: z.boolean().optional(),
   hasReports: z.boolean().optional(),
-  isActive: z.boolean().optional(),
+  active: z.boolean().optional(),
 });
 
 export type UpdateEstablishmentBody = z.infer<typeof updateEstablishmentSchema>;
@@ -41,6 +41,7 @@ export type UpdateEstablishmentBody = z.infer<typeof updateEstablishmentSchema>;
 export const createUserSchema = z.object({
   email: z.string().email('Email inválido'),
   name: z.string().min(3, 'Nome deve ter no mínimo 3 caracteres'),
+  password: z.string().min(8, 'Senha deve ter no mínimo 8 caracteres'),
   active: z.boolean().default(true),
 });
 

@@ -65,23 +65,28 @@ export function KitchenPage() {
     );
   }
 
-  // Verificar se estabelecimento tem módulo de cozinha
-  const establishment = useAuthStore.getState().user?.establishments.find(
-    (e) => e.id === currentEstablishment.id
+  // Verificar se usuário tem acesso ao módulo de cozinha
+  const userRole = useAuthStore.getState().user?.roles.find(
+    (r) => r.establishmentId === currentEstablishment.id
   );
 
-  // TODO: Adicionar campo hasKitchen no tipo Establishment
-  // if (!establishment?.hasKitchen) {
-  //   return (
-  //     <Layout>
-  //       <div className="text-center py-12">
-  //         <p className="text-gray-600">
-  //           Módulo de cozinha não habilitado para este estabelecimento
-  //         </p>
-  //       </div>
-  //     </Layout>
-  //   );
-  // }
+  // Verificar permissões
+  const hasKitchenAccess =
+    userRole?.role === 'admin_global' ||
+    userRole?.role === 'owner' ||
+    (userRole?.role === 'user' && userRole?.permissions?.modules?.kitchen);
+
+  if (!hasKitchenAccess) {
+    return (
+      <Layout>
+        <div className="text-center py-12">
+          <p className="text-gray-600">
+            Você não tem permissão para acessar o módulo de cozinha
+          </p>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>

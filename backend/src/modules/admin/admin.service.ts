@@ -5,6 +5,7 @@ import {
   ForbiddenError,
 } from '../../shared/errors/AppError';
 import { createAuditLog } from '../../shared/utils/audit';
+import { hashPassword } from '../../shared/utils/password';
 import type {
   CreateEstablishmentBody,
   UpdateEstablishmentBody,
@@ -44,7 +45,7 @@ export class AdminService {
   async listEstablishments(query: ListQuery, userId: string) {
     await this.verifyAdminGlobal(userId);
 
-    const { page, limit, search, isActive } = query;
+    const { page, limit, search, active } = query;
     const skip = (page - 1) * limit;
 
     const where: any = {};
@@ -56,8 +57,8 @@ export class AdminService {
       ];
     }
 
-    if (isActive !== undefined) {
-      where.isActive = isActive;
+    if (active !== undefined) {
+      where.active = active;
     }
 
     const [establishments, total] = await Promise.all([
@@ -106,7 +107,7 @@ export class AdminService {
                 id: true,
                 email: true,
                 name: true,
-                isActive: true,
+                active: true,
               },
             },
           },
@@ -329,7 +330,7 @@ export class AdminService {
                 id: true,
                 name: true,
                 slug: true,
-                isActive: true,
+                active: true,
               },
             },
           },
@@ -358,9 +359,12 @@ export class AdminService {
     if (existing) {
       throw new BadRequestError('Email já está em uso');
     }
+    // Hash da senha
+    const hashedPassword = await hashPassword(data.password);
+
 
     const user = await prisma.user.create({
-      data,
+      data: { ...data, password: hashedPassword },
     });
 
     // Audit log

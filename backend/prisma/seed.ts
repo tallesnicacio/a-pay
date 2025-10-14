@@ -1,27 +1,37 @@
 import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
+
+async function hashPassword(password: string): Promise<string> {
+  return bcrypt.hash(password, 10);
+}
 
 async function main() {
   console.log('🌱 Seeding database...');
 
-  // 1. Criar Admin Global
+  // Senha padrão para todos os usuários de teste
+  const defaultPassword = await hashPassword('senha123');
+
+  // 1. Criar Admin Global (proprietário da aplicação)
   const adminUser = await prisma.user.upsert({
     where: { email: 'admin@apay.com' },
-    update: {},
+    update: {
+      password: defaultPassword,
+    },
     create: {
       id: '00000000-0000-0000-0000-000000000001',
       email: 'admin@apay.com',
+      password: defaultPassword,
       name: 'Admin Global',
     },
   });
 
-  // Create admin_global role (can't use upsert with null establishmentId)
+  // Create admin_global role
   const existingAdminRole = await prisma.userRole.findFirst({
     where: {
       userId: adminUser.id,
       establishmentId: null,
-      role: 'admin_global',
     },
   });
 
@@ -35,7 +45,7 @@ async function main() {
     });
   }
 
-  console.log('✅ Admin Global created: admin@apay.com');
+  console.log('✅ Admin Global created: admin@apay.com (senha: senha123)');
 
   // 2. Criar Estabelecimento: Churrasquinho da Praça
   const churrasquinho = await prisma.establishment.upsert({
@@ -80,9 +90,160 @@ async function main() {
     }
   }
 
-  console.log(`✅ Establishment created: ${churrasquinho.name} (${churrasquinhoProducts.length} products)`);
+  console.log(
+    `✅ Establishment created: ${churrasquinho.name} (${churrasquinhoProducts.length} products)`
+  );
 
-  // 3. Criar Estabelecimento: ChoppTruck Ipanema
+  // 3. Criar Owner do Churrasquinho
+  const ownerChurras = await prisma.user.upsert({
+    where: { email: 'owner@churrasquinho.com' },
+    update: {
+      password: defaultPassword,
+    },
+    create: {
+      email: 'owner@churrasquinho.com',
+      password: defaultPassword,
+      name: 'Carlos Proprietário',
+    },
+  });
+
+  const existingOwnerRole = await prisma.userRole.findFirst({
+    where: {
+      userId: ownerChurras.id,
+      establishmentId: churrasquinho.id,
+    },
+  });
+
+  if (!existingOwnerRole) {
+    await prisma.userRole.create({
+      data: {
+        userId: ownerChurras.id,
+        establishmentId: churrasquinho.id,
+        role: 'owner',
+      },
+    });
+  }
+
+  console.log('✅ Owner created: owner@churrasquinho.com (senha: senha123)');
+
+  // 4. Criar Funcionário (user) com acesso a comandas e cozinha
+  const funcionario1 = await prisma.user.upsert({
+    where: { email: 'joao@churrasquinho.com' },
+    update: {
+      password: defaultPassword,
+    },
+    create: {
+      email: 'joao@churrasquinho.com',
+      password: defaultPassword,
+      name: 'João Silva',
+    },
+  });
+
+  const existingFunc1Role = await prisma.userRole.findFirst({
+    where: {
+      userId: funcionario1.id,
+      establishmentId: churrasquinho.id,
+    },
+  });
+
+  if (!existingFunc1Role) {
+    await prisma.userRole.create({
+      data: {
+        userId: funcionario1.id,
+        establishmentId: churrasquinho.id,
+        role: 'user',
+        permissions: {
+          modules: {
+            orders: true,
+            kitchen: true,
+            reports: false,
+          },
+        },
+      },
+    });
+  }
+
+  console.log('✅ User created: joao@churrasquinho.com (comandas + cozinha)');
+
+  // 5. Criar Funcionário (user) apenas com acesso a comandas
+  const funcionario2 = await prisma.user.upsert({
+    where: { email: 'maria@churrasquinho.com' },
+    update: {
+      password: defaultPassword,
+    },
+    create: {
+      email: 'maria@churrasquinho.com',
+      password: defaultPassword,
+      name: 'Maria Santos',
+    },
+  });
+
+  const existingFunc2Role = await prisma.userRole.findFirst({
+    where: {
+      userId: funcionario2.id,
+      establishmentId: churrasquinho.id,
+    },
+  });
+
+  if (!existingFunc2Role) {
+    await prisma.userRole.create({
+      data: {
+        userId: funcionario2.id,
+        establishmentId: churrasquinho.id,
+        role: 'user',
+        permissions: {
+          modules: {
+            orders: true,
+            kitchen: false,
+            reports: false,
+          },
+        },
+      },
+    });
+  }
+
+  console.log('✅ User created: maria@churrasquinho.com (apenas comandas)');
+
+  // 6. Criar Funcionário (user) apenas com acesso a cozinha
+  const funcionario3 = await prisma.user.upsert({
+    where: { email: 'pedro@churrasquinho.com' },
+    update: {
+      password: defaultPassword,
+    },
+    create: {
+      email: 'pedro@churrasquinho.com',
+      password: defaultPassword,
+      name: 'Pedro Cozinheiro',
+    },
+  });
+
+  const existingFunc3Role = await prisma.userRole.findFirst({
+    where: {
+      userId: funcionario3.id,
+      establishmentId: churrasquinho.id,
+    },
+  });
+
+  if (!existingFunc3Role) {
+    await prisma.userRole.create({
+      data: {
+        userId: funcionario3.id,
+        establishmentId: churrasquinho.id,
+        role: 'user',
+        permissions: {
+          modules: {
+            orders: false,
+            kitchen: true,
+            reports: false,
+          },
+        },
+      },
+    });
+  }
+
+  console.log('✅ User created: pedro@churrasquinho.com (apenas cozinha)');
+
+  // 7. Criar Estabelecimento: ChoppTruck Ipanema
   const choppTruck = await prisma.establishment.upsert({
     where: { id: '22222222-2222-2222-2222-222222222222' },
     update: {},
@@ -123,69 +284,56 @@ async function main() {
     }
   }
 
-  console.log(`✅ Establishment created: ${choppTruck.name} (${choppTruckProducts.length} products)`);
+  console.log(
+    `✅ Establishment created: ${choppTruck.name} (${choppTruckProducts.length} products)`
+  );
 
-  // 4. Criar usuários de exemplo para cada estabelecimento
-  const garcomChurras = await prisma.user.upsert({
-    where: { email: 'garcom@churrasquinho.com' },
-    update: {},
+  // 8. Criar Owner do ChoppTruck
+  const ownerChopp = await prisma.user.upsert({
+    where: { email: 'owner@chopptruck.com' },
+    update: {
+      password: defaultPassword,
+    },
     create: {
-      email: 'garcom@churrasquinho.com',
-      name: 'João Garçom',
+      email: 'owner@chopptruck.com',
+      password: defaultPassword,
+      name: 'Ana Proprietária',
     },
   });
 
-  await prisma.userRole.upsert({
+  const existingOwnerChoppRole = await prisma.userRole.findFirst({
     where: {
-      userId_establishmentId_role: {
-        userId: garcomChurras.id,
-        establishmentId: churrasquinho.id,
-        role: 'waiter',
+      userId: ownerChopp.id,
+      establishmentId: choppTruck.id,
+    },
+  });
+
+  if (!existingOwnerChoppRole) {
+    await prisma.userRole.create({
+      data: {
+        userId: ownerChopp.id,
+        establishmentId: choppTruck.id,
+        role: 'owner',
       },
-    },
-    update: {},
-    create: {
-      userId: garcomChurras.id,
-      establishmentId: churrasquinho.id,
-      role: 'waiter',
-    },
-  });
+    });
+  }
 
-  const cozinhaChurras = await prisma.user.upsert({
-    where: { email: 'cozinha@churrasquinho.com' },
-    update: {},
-    create: {
-      email: 'cozinha@churrasquinho.com',
-      name: 'Maria Cozinha',
-    },
-  });
-
-  await prisma.userRole.upsert({
-    where: {
-      userId_establishmentId_role: {
-        userId: cozinhaChurras.id,
-        establishmentId: churrasquinho.id,
-        role: 'kitchen',
-      },
-    },
-    update: {},
-    create: {
-      userId: cozinhaChurras.id,
-      establishmentId: churrasquinho.id,
-      role: 'kitchen',
-    },
-  });
-
-  console.log('✅ Sample users created for Churrasquinho');
+  console.log('✅ Owner created: owner@chopptruck.com (senha: senha123)');
 
   console.log('\n🎉 Database seeded successfully!');
-  console.log('\n📋 Credentials:');
-  console.log('  - Admin: admin@apay.com');
-  console.log('  - Garçom: garcom@churrasquinho.com');
-  console.log('  - Cozinha: cozinha@churrasquinho.com');
-  console.log('\n🔑 Establishment Access Codes:');
-  console.log('  - Churrasquinho da Praça: slug=churrasquinho-da-praca, code=1234');
-  console.log('  - ChoppTruck Ipanema: slug=chopptruck-ipanema, code=5678');
+  console.log('\n📋 Credentials (senha padrão: senha123):');
+  console.log('\n🔐 Admin Global:');
+  console.log('  - Email: admin@apay.com');
+  console.log('\n🏪 Churrasquinho da Praça:');
+  console.log('  - Owner: owner@churrasquinho.com');
+  console.log('  - Funcionário (comandas + cozinha): joao@churrasquinho.com');
+  console.log('  - Funcionário (apenas comandas): maria@churrasquinho.com');
+  console.log('  - Funcionário (apenas cozinha): pedro@churrasquinho.com');
+  console.log('\n🍺 ChoppTruck Ipanema:');
+  console.log('  - Owner: owner@chopptruck.com');
+  console.log('\n🔑 Establishment IDs:');
+  console.log(`  - Churrasquinho: ${churrasquinho.id}`);
+  console.log(`  - ChoppTruck: ${choppTruck.id}`);
 }
 
 main()

@@ -1,22 +1,15 @@
-import { Role } from '@prisma/client';
+import type { AuthUser, AuthUserRole } from './auth';
 
-export interface AuthUser {
-  id: string;
-  email: string;
-  name: string;
-  establishmentId?: string;
-  roles: Role[];
-}
+// Re-exportar tipos de auth.ts
+export type { AuthUser, AuthUserRole } from './auth';
 
-export interface JWTPayload {
-  userId: string;
-  email: string;
-  establishmentId?: string;
-}
-
+/**
+ * Extensão dos tipos do Fastify para incluir propriedades de autenticação
+ */
 declare module 'fastify' {
   interface FastifyRequest {
     user?: AuthUser;
     establishmentId?: string;
+    currentRole?: AuthUserRole | null;
   }
 }

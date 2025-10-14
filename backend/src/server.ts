@@ -13,6 +13,7 @@ import { ordersRoutes } from './modules/orders/orders.routes';
 import { kitchenRoutes } from './modules/kitchen/kitchen.routes';
 import { reportsRoutes } from './modules/reports/reports.routes';
 import { adminRoutes } from './modules/admin/admin.routes';
+import { employeesRoutes } from './modules/employees/employees.routes';
 import ssePlugin from './plugins/sse';
 import logger from './shared/utils/logger';
 import { env } from './shared/config/env';
@@ -62,6 +63,7 @@ async function registerPlugins() {
         { name: 'kitchen', description: 'Cozinha' },
         { name: 'reports', description: 'Relatórios' },
         { name: 'admin', description: 'Administração' },
+        { name: 'employees', description: 'Funcionários' },
       ],
     },
   });
@@ -141,6 +143,7 @@ async function registerRoutes() {
         kitchen: '/kitchen/tickets',
         reports: '/reports/*',
         admin: '/admin/*',
+        employees: '/employees',
       },
     };
   });
@@ -152,6 +155,7 @@ async function registerRoutes() {
   await fastify.register(kitchenRoutes, { prefix: '/kitchen/tickets' });
   await fastify.register(reportsRoutes, { prefix: '/reports' });
   await fastify.register(adminRoutes, { prefix: '/admin' });
+  await fastify.register(employeesRoutes, { prefix: '/employees' });
 }
 
 // Start server

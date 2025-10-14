@@ -5,13 +5,23 @@ import { NewOrderPage } from './pages/NewOrderPage';
 import { OrderDetailPage } from './pages/OrderDetailPage';
 import { KitchenPage } from './pages/KitchenPage';
 import { ReportsPage } from './pages/ReportsPage';
+import { ProductsPage } from './pages/ProductsPage';
+import { EmployeesPage } from './pages/EmployeesPage';
 import { AdminPage } from './pages/AdminPage';
 import { ProtectedRoute } from './components/common/ProtectedRoute';
 import { Toast, useToast } from './components/common/Toast';
 import { RetryQueueIndicator } from './components/common/RetryQueueIndicator';
+import { isAdminPanel, isAppPanel } from './utils/subdomain';
 
 function App() {
   const { message, type, isVisible, hideToast } = useToast();
+  const isAdmin = isAdminPanel();
+  const isApp = isAppPanel();
+
+  console.log('[App] Subdomain detection:', { isAdmin, isApp, hostname: window.location.hostname });
+
+  // Verificar se está em um subdomínio válido
+  const hasValidSubdomain = isAdmin || isApp;
 
   return (
     <BrowserRouter>
@@ -30,76 +40,157 @@ function App() {
         {/* Public routes */}
         <Route path="/login" element={<LoginPage />} />
 
-        {/* Protected routes */}
-        <Route
-          path="/orders"
-          element={
-            <ProtectedRoute>
-              <OrdersListPage />
-            </ProtectedRoute>
-          }
-        />
+        {/* Admin Panel Routes - apenas admin.* */}
+        {isAdmin ? (
+          <>
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute requireRole="admin_global">
+                  <AdminPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/" element={<Navigate to="/admin" replace />} />
 
-        <Route
-          path="/orders/new"
-          element={
-            <ProtectedRoute>
-              <NewOrderPage />
-            </ProtectedRoute>
-          }
-        />
+            {/* 404 para rotas inexistentes no painel admin */}
+            <Route
+              path="*"
+              element={
+                <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                  <div className="text-center">
+                    <h1 className="text-4xl font-bold text-gray-900 mb-2">404</h1>
+                    <p className="text-gray-600 mb-4">Página não encontrada no painel administrativo</p>
+                    <a href="/admin" className="text-blue-600 hover:text-blue-800 underline">
+                      Voltar para o painel
+                    </a>
+                  </div>
+                </div>
+              }
+            />
+          </>
+        ) : isApp ? (
+          <>
+            {/* App Panel Routes - app.* */}
+            <Route
+              path="/orders"
+              element={
+                <ProtectedRoute>
+                  <OrdersListPage />
+                </ProtectedRoute>
+              }
+            />
 
-        <Route
-          path="/orders/:id"
-          element={
-            <ProtectedRoute>
-              <OrderDetailPage />
-            </ProtectedRoute>
-          }
-        />
+            <Route
+              path="/orders/new"
+              element={
+                <ProtectedRoute>
+                  <NewOrderPage />
+                </ProtectedRoute>
+              }
+            />
 
-        <Route
-          path="/kitchen"
-          element={
-            <ProtectedRoute>
-              <KitchenPage />
-            </ProtectedRoute>
-          }
-        />
+            <Route
+              path="/orders/:id"
+              element={
+                <ProtectedRoute>
+                  <OrderDetailPage />
+                </ProtectedRoute>
+              }
+            />
 
-        <Route
-          path="/reports"
-          element={
-            <ProtectedRoute>
-              <ReportsPage />
-            </ProtectedRoute>
-          }
-        />
+            <Route
+              path="/kitchen"
+              element={
+                <ProtectedRoute>
+                  <KitchenPage />
+                </ProtectedRoute>
+              }
+            />
 
-        <Route
-          path="/admin"
-          element={
-            <ProtectedRoute>
-              <AdminPage />
-            </ProtectedRoute>
-          }
-        />
+            <Route
+              path="/reports"
+              element={
+                <ProtectedRoute>
+                  <ReportsPage />
+                </ProtectedRoute>
+              }
+            />
 
-        {/* Redirect root to orders */}
-        <Route path="/" element={<Navigate to="/orders" replace />} />
+            <Route
+              path="/products"
+              element={
+                <ProtectedRoute requireRole="owner">
+                  <ProductsPage />
+                </ProtectedRoute>
+              }
+            />
 
-        {/* 404 */}
-        <Route
-          path="*"
-          element={
-            <div className="min-h-screen flex items-center justify-center">
-              <div className="text-center">
-                <h1 className="text-4xl font-bold text-gray-900 mb-2">404</h1>
-                <p className="text-gray-600">Página não encontrada</p>
-              </div>
-            </div>
-          }
-        />
+            <Route
+              path="/employees"
+              element={
+                <ProtectedRoute requireRole="owner">
+                  <EmployeesPage />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Redirecionar / para /orders no painel app */}
+            <Route path="/" element={<Navigate to="/orders" replace />} />
+
+            {/* 404 para rotas inexistentes no painel app */}
+            <Route
+              path="*"
+              element={
+                <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                  <div className="text-center">
+                    <h1 className="text-4xl font-bold text-gray-900 mb-2">404</h1>
+                    <p className="text-gray-600 mb-4">Página não encontrada</p>
+                    <a href="/orders" className="text-blue-600 hover:text-blue-800 underline">
+                      Voltar para comandas
+                    </a>
+                  </div>
+                </div>
+              }
+            />
+          </>
+        ) : (
+          <>
+            {/* Sem subdomínio válido - apenas login e mensagem de erro */}
+            <Route
+              path="*"
+              element={
+                <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                  <div className="text-center max-w-md px-6">
+                    <h1 className="text-4xl font-bold text-red-600 mb-4">⚠️ Acesso Inválido</h1>
+                    <p className="text-gray-700 mb-6">
+                      Este sistema requer acesso através dos subdomínios configurados:
+                    </p>
+                    <div className="bg-white rounded-lg shadow p-6 mb-6 text-left">
+                      <p className="text-sm text-gray-600 mb-3">
+                        <strong className="text-gray-900">Painel Administrativo:</strong>
+                        <br />
+                        <code className="bg-gray-100 px-2 py-1 rounded text-xs">
+                          http://admin.localhost:5173
+                        </code>
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        <strong className="text-gray-900">Painel de Estabelecimento:</strong>
+                        <br />
+                        <code className="bg-gray-100 px-2 py-1 rounded text-xs">
+                          http://app.localhost:5173
+                        </code>
+                      </p>
+                    </div>
+                    <p className="text-sm text-gray-500">
+                      Por favor, acesse o sistema através de um dos subdomínios acima.
+                    </p>
+                  </div>
+                </div>
+              }
+            />
+          </>
+        )}
       </Routes>
     </BrowserRouter>
   );

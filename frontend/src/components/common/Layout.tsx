@@ -20,6 +20,19 @@ export function Layout({ children }: LayoutProps) {
     return location.pathname.startsWith(path);
   };
 
+  // Verificar permissões do usuário
+  const userRole = user?.roles?.find(r => r.establishmentId === currentEstablishment?.id);
+  const isAdminGlobal = user?.roles?.some(r => r.role === 'admin_global');
+  const isOwner = userRole?.role === 'owner' || isAdminGlobal;
+  const isUser = userRole?.role === 'user';
+
+  // Permissões de módulos para usuários
+  const hasOrdersAccess = isAdminGlobal || isOwner || (isUser && userRole?.permissions?.modules?.orders);
+  const hasKitchenAccess = isAdminGlobal || isOwner || (isUser && userRole?.permissions?.modules?.kitchen);
+  const hasReportsAccess = isAdminGlobal || isOwner || (isUser && userRole?.permissions?.modules?.reports);
+  const hasProductsAccess = isAdminGlobal || isOwner;
+  const hasEmployeesAccess = isAdminGlobal || isOwner;
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header */}
@@ -72,18 +85,20 @@ export function Layout({ children }: LayoutProps) {
       <nav className="bg-white border-b border-gray-200 sticky top-[65px] z-30">
         <div className="container mx-auto px-4 max-w-7xl">
           <div className="flex gap-1 overflow-x-auto">
-            <button
-              onClick={() => navigate('/orders')}
-              className={`px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors border-b-2 ${
-                isActive('/orders')
-                  ? 'text-primary-600 border-primary-600'
-                  : 'text-gray-600 border-transparent hover:text-gray-900 hover:border-gray-300'
-              }`}
-            >
-              📋 Comandas
-            </button>
+            {hasOrdersAccess && (
+              <button
+                onClick={() => navigate('/orders')}
+                className={`px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors border-b-2 ${
+                  isActive('/orders')
+                    ? 'text-primary-600 border-primary-600'
+                    : 'text-gray-600 border-transparent hover:text-gray-900 hover:border-gray-300'
+                }`}
+              >
+                📋 Comandas
+              </button>
+            )}
 
-            {currentEstablishment?.hasKitchen !== false && (
+            {hasKitchenAccess && (
               <button
                 onClick={() => navigate('/kitchen')}
                 className={`px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors border-b-2 ${
@@ -96,27 +111,42 @@ export function Layout({ children }: LayoutProps) {
               </button>
             )}
 
-            <button
-              onClick={() => navigate('/reports')}
-              className={`px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors border-b-2 ${
-                isActive('/reports')
-                  ? 'text-primary-600 border-primary-600'
-                  : 'text-gray-600 border-transparent hover:text-gray-900 hover:border-gray-300'
-              }`}
-            >
-              📊 Relatórios
-            </button>
-
-            {user?.establishments?.some((e: any) => e.role === 'admin_global' || e.role === 'admin') && (
+            {hasReportsAccess && (
               <button
-                onClick={() => navigate('/admin')}
+                onClick={() => navigate('/reports')}
                 className={`px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors border-b-2 ${
-                  isActive('/admin')
+                  isActive('/reports')
                     ? 'text-primary-600 border-primary-600'
                     : 'text-gray-600 border-transparent hover:text-gray-900 hover:border-gray-300'
                 }`}
               >
-                ⚙️ Admin
+                📊 Relatórios
+              </button>
+            )}
+
+            {hasProductsAccess && (
+              <button
+                onClick={() => navigate('/products')}
+                className={`px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors border-b-2 ${
+                  isActive('/products')
+                    ? 'text-primary-600 border-primary-600'
+                    : 'text-gray-600 border-transparent hover:text-gray-900 hover:border-gray-300'
+                }`}
+              >
+                🏷️ Produtos
+              </button>
+            )}
+
+            {hasEmployeesAccess && (
+              <button
+                onClick={() => navigate('/employees')}
+                className={`px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors border-b-2 ${
+                  isActive('/employees')
+                    ? 'text-primary-600 border-primary-600'
+                    : 'text-gray-600 border-transparent hover:text-gray-900 hover:border-gray-300'
+                }`}
+              >
+                👥 Funcionários
               </button>
             )}
           </div>
@@ -131,51 +161,15 @@ export function Layout({ children }: LayoutProps) {
       {/* Bottom navigation (mobile) */}
       <nav className="bg-white border-t border-gray-200 sticky bottom-0 sm:hidden">
         <div className="flex items-center justify-around">
-          <button
-            onClick={() => navigate('/orders')}
-            className="flex-1 flex flex-col items-center py-3 text-gray-600 hover:bg-gray-50"
-          >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+          {hasOrdersAccess && (
+            <button
+              onClick={() => navigate('/orders')}
+              className={`flex-1 flex flex-col items-center py-3 transition-colors ${
+                isActive('/orders')
+                  ? 'text-primary-600 bg-primary-50'
+                  : 'text-gray-600 hover:bg-gray-50'
+              }`}
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-              />
-            </svg>
-            <span className="text-xs mt-1">Comandas</span>
-          </button>
-
-          <button
-            onClick={() => navigate('/kitchen')}
-            className="flex-1 flex flex-col items-center py-3 text-gray-600 hover:bg-gray-50"
-          >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-              />
-            </svg>
-            <span className="text-xs mt-1">Cozinha</span>
-          </button>
-
-          <button
-            onClick={() => navigate('/orders/new')}
-            className="flex-1 flex flex-col items-center py-3 text-gray-600 hover:bg-gray-50"
-          >
-            <div className="w-12 h-12 -mt-6 bg-primary-600 text-white rounded-full flex items-center justify-center shadow-lg">
               <svg
                 className="w-6 h-6"
                 fill="none"
@@ -186,32 +180,120 @@ export function Layout({ children }: LayoutProps) {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth={2}
-                  d="M12 4v16m8-8H4"
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
                 />
               </svg>
-            </div>
-            <span className="text-xs mt-1">Nova</span>
-          </button>
+              <span className="text-xs mt-1">Comandas</span>
+            </button>
+          )}
 
-          <button
-            onClick={() => navigate('/reports')}
-            className="flex-1 flex flex-col items-center py-3 text-gray-600 hover:bg-gray-50"
-          >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+          {hasKitchenAccess && (
+            <button
+              onClick={() => navigate('/kitchen')}
+              className={`flex-1 flex flex-col items-center py-3 transition-colors ${
+                isActive('/kitchen')
+                  ? 'text-primary-600 bg-primary-50'
+                  : 'text-gray-600 hover:bg-gray-50'
+              }`}
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-              />
-            </svg>
-            <span className="text-xs mt-1">Relatórios</span>
-          </button>
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                />
+              </svg>
+              <span className="text-xs mt-1">Cozinha</span>
+            </button>
+          )}
+
+          {hasOrdersAccess && (
+            <button
+              onClick={() => navigate('/orders/new')}
+              className="flex-1 flex flex-col items-center py-3 text-gray-600 hover:bg-gray-50"
+            >
+              <div className="w-12 h-12 -mt-6 bg-primary-600 text-white rounded-full flex items-center justify-center shadow-lg">
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 4v16m8-8H4"
+                  />
+                </svg>
+              </div>
+              <span className="text-xs mt-1">Nova</span>
+            </button>
+          )}
+
+          {hasReportsAccess && (
+            <button
+              onClick={() => navigate('/reports')}
+              className={`flex-1 flex flex-col items-center py-3 transition-colors ${
+                isActive('/reports')
+                  ? 'text-primary-600 bg-primary-50'
+                  : 'text-gray-600 hover:bg-gray-50'
+              }`}
+            >
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                />
+              </svg>
+              <span className="text-xs mt-1">Relatórios</span>
+            </button>
+          )}
+
+          {(hasProductsAccess || hasEmployeesAccess) && (
+            <button
+              onClick={() => navigate(hasProductsAccess ? '/products' : '/employees')}
+              className={`flex-1 flex flex-col items-center py-3 transition-colors ${
+                isActive('/products') || isActive('/employees')
+                  ? 'text-primary-600 bg-primary-50'
+                  : 'text-gray-600 hover:bg-gray-50'
+              }`}
+            >
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+              </svg>
+              <span className="text-xs mt-1">Gestão</span>
+            </button>
+          )}
         </div>
       </nav>
     </div>

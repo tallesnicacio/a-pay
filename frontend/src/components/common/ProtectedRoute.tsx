@@ -4,15 +4,19 @@ import { useAuthStore } from '../../stores/authStore';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
+  requireRole?: 'admin_global' | 'owner' | 'user';
 }
 
-export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { isAuthenticated, isLoading, verifyAuth } = useAuthStore();
+export function ProtectedRoute({ children, requireRole }: ProtectedRouteProps) {
+  const { isAuthenticated, isLoading, verifyAuth, accessToken, user, currentEstablishment } = useAuthStore();
   const location = useLocation();
 
   useEffect(() => {
-    verifyAuth();
-  }, []);
+    // Só verifica auth se não estiver autenticado mas tiver token
+    if (!isAuthenticated && accessToken) {
+      verifyAuth();
+    }
+  }, [isAuthenticated, accessToken, verifyAuth]);
 
   if (isLoading) {
     return (
@@ -27,6 +31,50 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  // Verificar role se necessário
+  if (requireRole && user) {
+    // admin_global tem acesso a tudo
+    const isAdminGlobal = user.roles.some(r => r.role === 'admin_global');
+
+    if (isAdminGlobal) {
+      return <>{children}</>;
+    }
+
+    // Para outros roles, verificar no estabelecimento atual
+    if (currentEstablishment) {
+      const userRoleInEstablishment = user.roles.find(
+        r => r.establishmentId === currentEstablishment.id
+      );
+
+      const hasRequiredRole = userRoleInEstablishment?.role === requireRole ||
+                             (requireRole === 'user' && userRoleInEstablishment?.role === 'owner');
+
+      if (!hasRequiredRole) {
+        return (
+          <div className="min-h-screen flex items-center justify-center">
+            <div className="text-center">
+              <h1 className="text-4xl font-bold text-red-600 mb-2">403</h1>
+              <p className="text-gray-600">Você não tem permissão para acessar esta página</p>
+              <p className="text-sm text-gray-500 mt-2">
+                Role necessária: {requireRole}
+              </p>
+            </div>
+          </div>
+        );
+      }
+    } else {
+      // Sem estabelecimento selecionado
+      return (
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <h1 className="text-4xl font-bold text-yellow-600 mb-2">⚠️</h1>
+            <p className="text-gray-600">Nenhum estabelecimento selecionado</p>
+          </div>
+        </div>
+      );
+    }
   }
 
   return <>{children}</>;

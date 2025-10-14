@@ -5,10 +5,12 @@ import { Button } from '../components/common/Button';
 import { Input } from '../components/common/Input';
 import { Card } from '../components/common/Card';
 import { useToast } from '../components/common/Toast';
+import { isAdminPanel, isAppPanel } from '../utils/subdomain';
 
 export function LoginPage() {
   const [email, setEmail] = useState('');
-  const { login, isLoading, error } = useAuthStore();
+  const [password, setPassword] = useState('');
+  const { login, isLoading, error, user } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
   const { showToast } = useToast();
@@ -17,24 +19,39 @@ export function LoginPage() {
     e.preventDefault();
 
     try {
-      await login(email);
+      await login(email, password);
       showToast('Login realizado com sucesso!', 'success');
 
-      // Redirecionar para a página que o usuário estava tentando acessar
-      // ou para /orders se não houver página anterior
-      const from = (location.state as any)?.from?.pathname || '/orders';
-      navigate(from, { replace: true });
+      // Redirecionar baseado no subdomínio
+      const isAdmin = isAdminPanel();
+      const from = (location.state as any)?.from?.pathname;
+
+      if (from) {
+        // Se tinha uma página anterior, vai para ela
+        navigate(from, { replace: true });
+      } else if (isAdmin) {
+        // Se está no admin.localhost, vai para /admin
+        navigate('/admin', { replace: true });
+      } else {
+        // Se está no app.localhost ou localhost, vai para /orders
+        navigate('/orders', { replace: true });
+      }
     } catch (err) {
       showToast(error || 'Erro ao fazer login', 'error');
     }
   };
 
-  // Sugestões de emails para facilitar o teste
-  const quickEmails = [
-    { email: 'admin@apay.com', label: 'Admin' },
-    { email: 'garcom@churrasquinho.com', label: 'Garçom' },
-    { email: 'cozinha@churrasquinho.com', label: 'Cozinha' },
+  // Logins rápidos para facilitar o teste
+  const quickLogins = [
+    { email: 'admin@apay.com', label: 'Admin', password: 'senha123' },
+    { email: 'owner@churrasquinho.com', label: 'Owner', password: 'senha123' },
+    { email: 'joao@churrasquinho.com', label: 'João', password: 'senha123' },
   ];
+
+  const handleQuickLogin = (quickLogin: { email: string; password: string }) => {
+    setEmail(quickLogin.email);
+    setPassword(quickLogin.password);
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 to-primary-100 p-4">
@@ -42,6 +59,11 @@ export function LoginPage() {
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-primary-900 mb-2">A-Pay</h1>
           <p className="text-gray-600">Sistema de Controle de Pedidos</p>
+          {isAdminPanel() && (
+            <p className="text-xs text-primary-600 mt-2 font-semibold">
+              Painel Administrativo
+            </p>
+          )}
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -54,6 +76,16 @@ export function LoginPage() {
             required
             autoComplete="email"
             autoFocus
+          />
+
+          <Input
+            type="password"
+            label="Senha"
+            placeholder="••••••••"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            autoComplete="current-password"
           />
 
           {error && (
@@ -73,23 +105,26 @@ export function LoginPage() {
             Acesso rápido (desenvolvimento):
           </p>
           <div className="grid grid-cols-3 gap-2">
-            {quickEmails.map((item) => (
+            {quickLogins.map((item) => (
               <button
                 key={item.email}
                 type="button"
-                onClick={() => setEmail(item.email)}
+                onClick={() => handleQuickLogin(item)}
                 className="px-3 py-2 text-xs font-medium text-primary-700 bg-primary-50 hover:bg-primary-100 rounded-lg transition-colors"
               >
                 {item.label}
               </button>
             ))}
           </div>
+          <p className="text-xs text-gray-500 text-center mt-2">
+            Senha padrão: senha123
+          </p>
         </div>
 
         <div className="mt-6 text-center text-sm text-gray-500">
-          <p>MVP - Autenticação simplificada</p>
+          <p>Autenticação JWT</p>
           <p className="text-xs mt-1">
-            Em produção, será usado Supabase Magic Link
+            Access token expira em 15 minutos
           </p>
         </div>
       </Card>

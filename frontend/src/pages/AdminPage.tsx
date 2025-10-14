@@ -35,7 +35,7 @@ export function AdminPage() {
   const [formData, setFormData] = useState<any>({});
 
   // Verificar se é admin_global
-  const isAdminGlobal = user?.establishments.some((e) => e.role === 'admin_global');
+  const isAdminGlobal = user?.roles.some((r) => r.role === 'admin_global');
 
   // Carregar establishments
   const loadEstablishments = async () => {
@@ -221,7 +221,7 @@ export function AdminPage() {
                     hasKitchen: true,
                     hasOrders: true,
                     hasReports: true,
-                    isActive: true,
+                    active: true,
                   });
                   setShowEstablishmentModal(true);
                 }}
@@ -245,12 +245,12 @@ export function AdminPage() {
                       </div>
                       <span
                         className={`px-2 py-1 text-xs font-medium rounded-full ${
-                          establishment.isActive
+                          establishment.active
                             ? 'bg-green-100 text-green-800'
                             : 'bg-gray-100 text-gray-800'
                         }`}
                       >
-                        {establishment.isActive ? 'Ativo' : 'Inativo'}
+                        {establishment.active ? 'Ativo' : 'Inativo'}
                       </span>
                     </div>
 
@@ -292,7 +292,7 @@ export function AdminPage() {
                             hasKitchen: establishment.hasKitchen,
                             hasOrders: establishment.hasOrders,
                             hasReports: establishment.hasReports,
-                            isActive: establishment.isActive,
+                            active: establishment.active,
                           });
                           setShowEstablishmentModal(true);
                         }}
@@ -481,14 +481,14 @@ export function AdminPage() {
             <div className="flex items-center gap-2 border-t border-gray-200 pt-4">
               <input
                 type="checkbox"
-                id="isActive"
-                checked={formData.isActive !== false}
+                id="active"
+                checked={formData.active !== false}
                 onChange={(e) =>
-                  setFormData({ ...formData, isActive: e.target.checked })
+                  setFormData({ ...formData, active: e.target.checked })
                 }
                 className="w-4 h-4 text-primary-600 rounded focus:ring-primary-500"
               />
-              <label htmlFor="isActive" className="text-sm text-gray-700">
+              <label htmlFor="active" className="text-sm text-gray-700">
                 ✅ Estabelecimento ativo
               </label>
             </div>
@@ -536,6 +536,17 @@ export function AdminPage() {
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               placeholder="Ex: joao@example.com"
             />
+            {!editingUser && (
+              <Input
+                label="Senha"
+                type="password"
+                value={formData.password || ''}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                placeholder="Mínimo 8 caracteres"
+                required
+              />
+            )}
+
 
             <div className="flex items-center gap-2">
               <input

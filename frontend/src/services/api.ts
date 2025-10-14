@@ -21,6 +21,9 @@ import type {
   UpdateUserRoleRequest,
   PaginationParams,
   PaginatedResponse,
+  Employee,
+  CreateEmployeeRequest,
+  UpdateEmployeeRequest,
 } from '../types';
 
 // Auto-detect API URL based on current host (for mobile access)
@@ -48,7 +51,7 @@ export const api = axios.create({
 // Request interceptor to add auth token
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('apay_token');
+    const token = localStorage.getItem('apay_access_token');
     const establishmentId = localStorage.getItem('apay_establishment_id');
 
     if (token) {
@@ -73,7 +76,8 @@ api.interceptors.response.use(
     // Handle 401 Unauthorized
     if (error.response?.status === 401) {
       // Unauthorized - clear token and redirect to login
-      localStorage.removeItem('apay_token');
+      localStorage.removeItem('apay_access_token');
+      localStorage.removeItem('apay_refresh_token');
       localStorage.removeItem('apay_user');
       localStorage.removeItem('apay_establishment_id');
       window.location.href = '/login';
@@ -111,18 +115,18 @@ api.interceptors.response.use(
 
 // Auth API
 export const authApi = {
-  login: async (email: string): Promise<AuthResponse> => {
+  login: async (email: string, password: string): Promise<AuthResponse> => {
     const response = await api.post<ApiResponse<AuthResponse>>('/auth/login', {
       email,
+      password,
     });
     return response.data.data;
   },
 
-  verifyToken: async (token: string): Promise<{ user: User }> => {
-    const response = await api.post<ApiResponse<{ user: User }>>(
-      '/auth/verify',
-      { token }
-    );
+  refresh: async (refreshToken: string): Promise<{ accessToken: string; refreshToken: string }> => {
+    const response = await api.post<ApiResponse<{ accessToken: string; refreshToken: string }>>('/auth/refresh', {
+      refreshToken,
+    });
     return response.data.data;
   },
 
@@ -144,6 +148,20 @@ export const productsApi = {
   getProductById: async (id: string): Promise<Product> => {
     const response = await api.get<ApiResponse<Product>>(`/products/${id}`);
     return response.data.data;
+  },
+
+  createProduct: async (data: { name: string; price: number; active?: boolean }): Promise<Product> => {
+    const response = await api.post<ApiResponse<Product>>('/products', data);
+    return response.data.data;
+  },
+
+  updateProduct: async (id: string, data: { name?: string; price?: number; active?: boolean }): Promise<Product> => {
+    const response = await api.patch<ApiResponse<Product>>(`/products/${id}`, data);
+    return response.data.data;
+  },
+
+  deleteProduct: async (id: string): Promise<void> => {
+    await api.delete(`/products/${id}`);
   },
 };
 
@@ -367,6 +385,28 @@ export const adminApi = {
 
   deleteUserRole: async (id: string): Promise<void> => {
     await api.delete(`/admin/user-roles/${id}`);
+  },
+};
+
+// Employees API
+export const employeesApi = {
+  listEmployees: async (): Promise<Employee[]> => {
+    const response = await api.get<ApiResponse<Employee[]>>('/employees');
+    return response.data.data;
+  },
+
+  createEmployee: async (data: CreateEmployeeRequest): Promise<Employee> => {
+    const response = await api.post<ApiResponse<Employee>>('/employees', data);
+    return response.data.data;
+  },
+
+  updateEmployee: async (id: string, data: UpdateEmployeeRequest): Promise<Employee> => {
+    const response = await api.patch<ApiResponse<Employee>>(`/employees/${id}`, data);
+    return response.data.data;
+  },
+
+  deleteEmployee: async (id: string): Promise<void> => {
+    await api.delete(`/employees/${id}`);
   },
 };
 

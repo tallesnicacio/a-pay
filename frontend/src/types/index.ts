@@ -1,9 +1,22 @@
 // User & Auth
+export interface AuthUserRole {
+  establishmentId: string | null;
+  establishmentName?: string;
+  role: 'admin_global' | 'owner' | 'user';
+  permissions?: {
+    modules: {
+      orders: boolean;
+      kitchen: boolean;
+      reports: boolean;
+    };
+  };
+}
+
 export interface User {
   id: string;
   email: string;
   name: string;
-  establishments: Establishment[];
+  roles: AuthUserRole[];
 }
 
 export interface Establishment {
@@ -13,7 +26,8 @@ export interface Establishment {
 }
 
 export interface AuthResponse {
-  token: string;
+  accessToken: string;
+  refreshToken: string;
   user: User;
 }
 
@@ -297,5 +311,50 @@ export interface PaginatedResponse<T> {
     limit: number;
     total: number;
     totalPages: number;
+  };
+}
+
+// Employee
+export interface Employee {
+  id: string;
+  userId: string;
+  email: string;
+  name: string;
+  active: boolean;
+  role: 'owner' | 'user';
+  permissions?: {
+    modules: {
+      orders: boolean;
+      kitchen: boolean;
+      reports: boolean;
+    };
+  } | null;
+  createdAt: string;
+}
+
+export interface CreateEmployeeRequest {
+  email: string;
+  name: string;
+  password: string;
+  role: 'owner' | 'user';
+  permissions?: {
+    modules: {
+      orders: boolean;
+      kitchen: boolean;
+      reports: boolean;
+    };
+  };
+}
+
+export interface UpdateEmployeeRequest {
+  name?: string;
+  email?: string;
+  active?: boolean;
+  permissions?: {
+    modules: {
+      orders: boolean;
+      kitchen: boolean;
+      reports: boolean;
+    };
   };
 }

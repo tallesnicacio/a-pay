@@ -1,96 +1,210 @@
-# A-Pay - Sistema de Controle de Pedidos
+# A-Pay - Sistema de Gestão para Estabelecimentos
 
-Sistema multi-estabelecimento para controle de comandas e cozinha, focado em operações de food truck e pracinhas.
+Sistema completo de gestão multi-estabelecimento para controle de comandas, cozinha, produtos e funcionários. Ideal para food trucks, bares, restaurantes e pracinhas.
 
-## Características
+## 📋 Status do Projeto
 
-## ✨ Melhorias Recentes
+### ✅ Funcionalidades Implementadas
 
-- **🔒 Validação de Env**: Variáveis de ambiente validadas com Zod no startup
-- **📚 Swagger/OpenAPI**: Documentação interativa da API em /docs
-- **🛡️ Error Handling**: Tratamento específico de erros do Prisma
-- **📄 Paginação**: Sistema de paginação reutilizável para listagens
-- **🔐 JWT Ready**: Preparado para implementação de JWT ou Supabase Auth
+#### 🔐 Autenticação e Autorização
+- [x] Sistema JWT completo com access e refresh tokens
+- [x] Autenticação por email e senha com bcrypt
+- [x] Controle de acesso baseado em papéis (RBAC)
+- [x] Permissões granulares por módulo (pedidos, cozinha, relatórios)
+- [x] Suporte a múltiplos estabelecimentos por usuário
+- [x] Sistema de subdomínios (admin.*, app.*)
 
-Veja [IMPROVEMENTS.md](IMPROVEMENTS.md) para detalhes completos.
+#### 👥 Gestão de Estabelecimentos
+- [x] Painel administrativo global (admin.localhost)
+- [x] Criação e gerenciamento de estabelecimentos
+- [x] Configuração de módulos por estabelecimento
+- [x] Isolamento completo de dados (Row Level Security)
 
-- **Multi-tenant**: Isolamento completo de dados por estabelecimento
-- **Módulos ativáveis**: Comanda e Cozinha podem ser ativados/desativados por estabelecimento
-- **PWA**: Funciona como app no celular, com suporte a offline
-- **Real-time**: Atualizações instantâneas via Server-Sent Events
-- **RBAC**: Controle de acesso por papéis (Admin Global, Dono, Garçom, Cozinha, Caixa)
+#### 👨‍💼 Gestão de Funcionários
+- [x] Cadastro de funcionários por estabelecimento
+- [x] Definição de papéis (Owner, User)
+- [x] Permissões granulares por módulo
+- [x] Ativação/desativação de funcionários
+- [x] Exclusão segura (não permite remover owners)
 
-## Stack Tecnológica
+#### 🍽️ Gestão de Produtos
+- [x] Cadastro de produtos por estabelecimento
+- [x] Controle de preços
+- [x] Ativação/desativação de produtos
+- [x] Busca e filtros
+- [x] Interface responsiva
+
+#### 📝 Sistema de Comandas
+- [x] Criação de pedidos com múltiplos itens
+- [x] Controle de status (pendente, em preparo, pronto, entregue)
+- [x] Cálculo automático de totais
+- [x] Histórico completo de pedidos
+- [x] Filtros e busca
+
+#### 🍳 Módulo de Cozinha
+- [x] Quadro Kanban para visualização de pedidos
+- [x] Atualização de status em tempo real
+- [x] Organização por etapas do preparo
+- [x] Interface otimizada para tablets
+
+#### 📊 Relatórios
+- [x] Dashboard com métricas
+- [x] Filtros por período
+- [x] Visualização de vendas
+- [x] Exportação de dados
+
+#### 🔄 Recursos Técnicos
+- [x] PWA - Funciona offline
+- [x] Server-Sent Events (SSE) para atualizações em tempo real
+- [x] Retry Queue para operações offline
+- [x] Documentação Swagger/OpenAPI
+- [x] Validação robusta com Zod
+- [x] TypeScript em todo o stack
+- [x] Migrations Prisma
+
+### 🎯 Papéis e Permissões
+
+#### Admin Global
+- Acesso total ao sistema
+- Gerenciamento de estabelecimentos
+- Painel administrativo exclusivo
+
+#### Owner (Proprietário)
+- Gestão completa do estabelecimento
+- Cadastro de funcionários e produtos
+- Acesso a todos os módulos
+- Visualização de relatórios
+
+#### User (Funcionário)
+- Permissões configuráveis por módulo:
+  - **Pedidos**: Criar e gerenciar comandas
+  - **Cozinha**: Visualizar e atualizar status
+  - **Relatórios**: Visualizar métricas
+
+## 🚀 Stack Tecnológica
 
 ### Backend
-- Node.js 20 LTS
-- Fastify 4.x
-- Prisma ORM 5.x
-- PostgreSQL 15+ com Row Level Security
-- TypeScript
+- **Runtime**: Node.js 20 LTS
+- **Framework**: Fastify 4.x
+- **ORM**: Prisma 5.x
+- **Database**: PostgreSQL 15+ com Row Level Security
+- **Autenticação**: JWT + bcrypt
+- **Validação**: Zod
+- **Documentação**: Swagger/OpenAPI
+- **Linguagem**: TypeScript
 
 ### Frontend
-- React 18.x
-- Vite 5.x
-- Tailwind CSS 3.x
-- Zustand (state management)
-- PWA (manifest + service worker)
+- **Framework**: React 18.x
+- **Build Tool**: Vite 5.x
+- **Estilização**: Tailwind CSS 3.x
+- **Estado**: Zustand
+- **Roteamento**: React Router v6
+- **PWA**: Vite PWA Plugin
+- **Linguagem**: TypeScript
 
-## Estrutura do Projeto
+## 📁 Estrutura do Projeto
 
 ```
 a-pay/
-├── backend/          # API Fastify + Prisma
-│   ├── src/
-│   │   ├── modules/  # Módulos por domínio
-│   │   ├── shared/   # Código compartilhado
-│   │   └── plugins/  # Plugins Fastify
-│   └── prisma/       # Schema e migrations
-├── frontend/         # React PWA
+├── backend/
+│   ├── prisma/
+│   │   ├── schema.prisma           # Schema do banco de dados
+│   │   ├── migrations/             # Migrações do banco
+│   │   └── seed.ts                 # Dados iniciais
 │   └── src/
-└── docker/          # Docker Compose configs
+│       ├── modules/
+│       │   ├── admin/              # Painel administrativo
+│       │   ├── auth/               # Autenticação JWT
+│       │   ├── employees/          # Gestão de funcionários
+│       │   ├── orders/             # Sistema de comandas
+│       │   └── products/           # Gestão de produtos
+│       ├── shared/
+│       │   ├── middleware/         # Auth, validation, etc
+│       │   ├── utils/              # Helpers (JWT, password, etc)
+│       │   └── types/              # Tipos TypeScript
+│       └── server.ts               # Configuração do servidor
+├── frontend/
+│   └── src/
+│       ├── components/
+│       │   ├── common/             # Componentes reutilizáveis
+│       │   └── kitchen/            # Componentes da cozinha
+│       ├── pages/
+│       │   ├── AdminPage.tsx       # Painel admin
+│       │   ├── EmployeesPage.tsx   # Gestão de funcionários
+│       │   ├── ProductsPage.tsx    # Gestão de produtos
+│       │   ├── OrdersListPage.tsx  # Lista de pedidos
+│       │   ├── KitchenPage.tsx     # Quadro da cozinha
+│       │   └── ReportsPage.tsx     # Relatórios
+│       ├── stores/                 # Zustand stores
+│       ├── services/               # API client
+│       └── utils/                  # Helpers (subdomain, etc)
+└── docs/                           # Documentação adicional
 ```
 
-## Setup Rápido
+## 🛠️ Setup e Instalação
 
 ### Pré-requisitos
 
 - Node.js 20+
-- Docker & Docker Compose
+- PostgreSQL 15+
 - pnpm (recomendado) ou npm
 
-### Instalação
+### 1. Clone o Repositório
 
-1. Clone o repositório:
 ```bash
 git clone https://github.com/tallesnicacio/a-pay.git
 cd a-pay
 ```
 
-2. Instale as dependências:
+### 2. Configure o Banco de Dados
+
 ```bash
+# Via Docker (recomendado)
+docker-compose up -d postgres
+
+# Ou instale PostgreSQL localmente
+```
+
+### 3. Configure as Variáveis de Ambiente
+
+**Backend** (`backend/.env`):
+```env
+DATABASE_URL="postgresql://user:password@localhost:5432/apay"
+JWT_SECRET="seu-secret-muito-seguro-aqui"
+JWT_REFRESH_SECRET="seu-refresh-secret-muito-seguro-aqui"
+JWT_ACCESS_EXPIRES_IN="15m"
+JWT_REFRESH_EXPIRES_IN="7d"
+PORT=3000
+NODE_ENV=development
+```
+
+**Frontend** (`frontend/.env`):
+```env
+VITE_API_URL=http://localhost:3000
+```
+
+### 4. Instale as Dependências
+
+```bash
+# Backend
+cd backend
+pnpm install
+
+# Frontend
+cd ../frontend
 pnpm install
 ```
 
-3. Configure as variáveis de ambiente:
-```bash
-cp .env.example .env
-# Edite .env com suas credenciais
-```
+### 5. Execute as Migrações e Seed
 
-4. Inicie os serviços com Docker:
-```bash
-docker-compose up -d
-```
-
-5. Execute as migrações:
 ```bash
 cd backend
 pnpm prisma migrate dev
 pnpm prisma db seed
 ```
 
-6. Inicie o desenvolvimento:
+### 6. Inicie os Servidores
+
 ```bash
 # Terminal 1 - Backend
 cd backend
@@ -101,120 +215,177 @@ cd frontend
 pnpm dev
 ```
 
-Acesse:
-- Frontend: http://localhost:5173
-- Backend: http://localhost:3000
-- API Docs: http://localhost:3000/docs
+### 7. Acesse o Sistema
 
-## Usuários Seed
+#### Painel Administrativo
+- URL: http://admin.localhost:5173
+- Login: admin@apay.com / Admin123!
 
-Após executar `prisma db seed`:
+#### Painel do Estabelecimento
+- URL: http://app.localhost:5173
+- Login: Use as credenciais dos estabelecimentos criados no seed
 
-- **Admin Global**: admin@apay.com
-- **Estabelecimento 1**: Churrasquinho da Praça (com cozinha)
-- **Estabelecimento 2**: ChoppTruck Ipanema (só comanda)
+**Nota**: Configure o arquivo `/etc/hosts` (Linux/Mac) ou `C:\Windows\System32\drivers\etc\hosts` (Windows):
+```
+127.0.0.1 admin.localhost
+127.0.0.1 app.localhost
+```
 
-## Scripts Disponíveis
+## 📚 Guias de Uso
+
+### Como Criar um Novo Estabelecimento
+
+1. Acesse o painel administrativo (admin.localhost)
+2. Faça login como admin global
+3. Clique em "Novo Estabelecimento"
+4. Preencha os dados e configure os módulos
+5. Salve e anote as credenciais de acesso
+
+### Como Gerenciar Funcionários
+
+1. Acesse o painel do estabelecimento (app.localhost)
+2. Faça login como Owner
+3. Navegue até "Funcionários"
+4. Clique em "Novo Funcionário"
+5. Configure as permissões desejadas
+6. Salve e compartilhe as credenciais
+
+### Como Criar Produtos
+
+1. Acesse "Produtos" no menu
+2. Clique em "Novo Produto"
+3. Preencha nome e preço
+4. Salve e o produto estará disponível para pedidos
+
+### Como Fazer um Pedido
+
+1. Acesse "Comandas"
+2. Clique em "Novo Pedido"
+3. Adicione produtos
+4. Finalize o pedido
+5. Se o módulo de cozinha estiver ativo, o pedido aparecerá automaticamente lá
+
+## 🔒 Segurança
+
+### Implementado
+
+- ✅ Senhas hasheadas com bcrypt (salt rounds: 10)
+- ✅ JWT com tokens de curta duração (15min)
+- ✅ Refresh tokens seguros (7 dias)
+- ✅ Row Level Security no PostgreSQL
+- ✅ Validação de entrada com Zod
+- ✅ Proteção contra SQL Injection (Prisma)
+- ✅ CORS configurado
+- ✅ Rate limiting básico
+
+### Recomendações para Produção
+
+- [ ] Implementar rate limiting avançado
+- [ ] Adicionar HTTPS obrigatório
+- [ ] Configurar Content Security Policy (CSP)
+- [ ] Implementar 2FA para admins
+- [ ] Adicionar logs de auditoria
+- [ ] Configurar backup automático do banco
+
+## 🧪 Testes
 
 ```bash
-# Raiz
-pnpm install        # Instalar todas dependências
-pnpm dev           # Iniciar backend + frontend
-pnpm build         # Build para produção
-pnpm test          # Executar testes
-
-# Backend
-pnpm dev           # Dev com hot reload
-pnpm build         # Compilar TypeScript
-pnpm start         # Produção
-pnpm test          # Testes unitários + integração
-pnpm prisma:studio # Interface visual do banco
-
-# Frontend
-pnpm dev           # Dev server
-pnpm build         # Build otimizado
-pnpm preview       # Preview do build
-pnpm test          # Testes com Vitest
-```
-
-## Arquitetura
-
-### Multi-tenant com RLS
-
-Cada query ao banco é automaticamente filtrada por `establishment_id` usando Row Level Security do PostgreSQL:
-
-```typescript
-// Middleware define o contexto
-await prisma.$executeRaw`SET app.current_establishment = ${establishmentId}`;
-
-// Todas queries respeitam RLS automaticamente
-const orders = await prisma.order.findMany(); // Só retorna do establishment atual
-```
-
-### Módulos por Estabelecimento
-
-Cada estabelecimento pode ativar/desativar módulos:
-- `has_orders`: Módulo de comandas
-- `has_kitchen`: Módulo de cozinha
-
-O frontend adapta o menu automaticamente.
-
-### Fluxo de Dados
-
-```
-Garçom cria comanda → API valida → Salva no DB →
-→ Se tem cozinha: Gera ticket → SSE notifica cozinha →
-→ Cozinha atualiza status → SSE notifica garçom
-```
-
-## Deploy
-
-### Desenvolvimento Local
-```bash
-docker-compose up
-```
-
-### Produção
-
-**Backend**: Railway ou Render
-```bash
-# Via Railway CLI
-railway up
-```
-
-**Frontend**: Vercel
-```bash
-# Via Vercel CLI
-vercel --prod
-```
-
-Veja [DEPLOY.md](./DEPLOY.md) para instruções detalhadas.
-
-## Testes
-
-```bash
-# Unitários
+# Backend - Testes unitários
+cd backend
 pnpm test
 
-# E2E
-pnpm test:e2e
+# Frontend - Testes com Vitest
+cd frontend
+pnpm test
 
 # Coverage
 pnpm test:coverage
 ```
 
-## Contribuindo
+## 📦 Deploy
+
+### Backend (Railway/Render)
+
+1. Configure as variáveis de ambiente
+2. Execute as migrations
+3. Deploy
+
+```bash
+# Via Railway CLI
+railway up
+
+# Via Render
+# Conecte o repositório GitHub
+```
+
+### Frontend (Vercel/Netlify)
+
+1. Configure VITE_API_URL
+2. Build e deploy
+
+```bash
+# Via Vercel CLI
+vercel --prod
+
+# Via Netlify CLI
+netlify deploy --prod
+```
+
+## 🤝 Contribuindo
 
 1. Fork o projeto
-2. Crie uma branch (`git checkout -b feature/nova-feature`)
-3. Commit suas mudanças (`git commit -m 'Add nova feature'`)
+2. Crie uma branch para sua feature (`git checkout -b feature/nova-feature`)
+3. Commit suas mudanças (`git commit -m 'feat: Adicionar nova feature'`)
 4. Push para a branch (`git push origin feature/nova-feature`)
 5. Abra um Pull Request
 
-## Licença
+## 📝 Scripts Disponíveis
 
-MIT
+### Backend
+```bash
+pnpm dev              # Desenvolvimento com hot reload
+pnpm build            # Build para produção
+pnpm start            # Executar em produção
+pnpm prisma:studio    # Interface visual do banco
+pnpm prisma:migrate   # Executar migrations
+pnpm test             # Executar testes
+```
 
-## Suporte
+### Frontend
+```bash
+pnpm dev              # Servidor de desenvolvimento
+pnpm build            # Build para produção
+pnpm preview          # Preview do build
+pnpm test             # Executar testes
+```
 
-Para dúvidas ou problemas, abra uma issue no GitHub.
+## 📖 Documentação Adicional
+
+- [Swagger/OpenAPI](http://localhost:3000/docs) - Documentação interativa da API
+- [Guia de Testes](./TESTING-AUTH.md) - Como testar o sistema
+- [Arquitetura](./docs/architecture.md) - Detalhes técnicos da arquitetura
+- [Changelog](./CHANGELOG.md) - Histórico de versões
+
+## 🐛 Problemas Conhecidos
+
+- Nenhum problema crítico no momento
+
+## 📄 Licença
+
+MIT License - veja o arquivo [LICENSE](LICENSE) para detalhes.
+
+## 👨‍💻 Autor
+
+**Talles Nicacio**
+- GitHub: [@tallesnicacio](https://github.com/tallesnicacio)
+
+## 🙏 Agradecimentos
+
+- Comunidade React
+- Time do Fastify
+- Contribuidores do Prisma
+- E todos que contribuíram com feedback e sugestões
+
+---
+
+**Nota**: Este projeto está em desenvolvimento ativo. Novas features são adicionadas regularmente.
