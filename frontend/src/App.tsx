@@ -1,5 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { LoginPage } from './pages/LoginPage';
+import { SelectEstablishmentPage } from './pages/SelectEstablishmentPage';
+import { DashboardPage } from './pages/DashboardPage';
 import { OrdersListPage } from './pages/OrdersListPage';
 import { NewOrderPage } from './pages/NewOrderPage';
 import { OrderDetailPage } from './pages/OrderDetailPage';
@@ -8,9 +10,11 @@ import { ReportsPage } from './pages/ReportsPage';
 import { ProductsPage } from './pages/ProductsPage';
 import { EmployeesPage } from './pages/EmployeesPage';
 import { AdminPage } from './pages/AdminPage';
+import { MenuPage } from './pages/MenuPage';
 import { ProtectedRoute } from './components/common/ProtectedRoute';
 import { Toast, useToast } from './components/common/Toast';
 import { RetryQueueIndicator } from './components/common/RetryQueueIndicator';
+import { Layout } from './components/common/Layout';
 import { isAdminPanel, isAppPanel } from './utils/subdomain';
 
 function App() {
@@ -18,7 +22,6 @@ function App() {
   const isAdmin = isAdminPanel();
   const isApp = isAppPanel();
 
-  console.log('[App] Subdomain detection:', { isAdmin, isApp, hostname: window.location.hostname });
 
   // Verificar se está em um subdomínio válido
   const hasValidSubdomain = isAdmin || isApp;
@@ -39,6 +42,8 @@ function App() {
       <Routes>
         {/* Public routes */}
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/select-establishment" element={<SelectEstablishmentPage />} />
+        <Route path="/menu/:establishmentSlug" element={<MenuPage />} />
 
         {/* Admin Panel Routes - apenas admin.* */}
         {isAdmin ? (
@@ -72,6 +77,17 @@ function App() {
         ) : isApp ? (
           <>
             {/* App Panel Routes - app.* */}
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <DashboardPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+
             <Route
               path="/orders"
               element={
@@ -135,8 +151,8 @@ function App() {
               }
             />
 
-            {/* Redirecionar / para /orders no painel app */}
-            <Route path="/" element={<Navigate to="/orders" replace />} />
+            {/* Redirecionar / para /dashboard no painel app */}
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
             {/* 404 para rotas inexistentes no painel app */}
             <Route
@@ -146,8 +162,8 @@ function App() {
                   <div className="text-center">
                     <h1 className="text-4xl font-bold text-gray-900 mb-2">404</h1>
                     <p className="text-gray-600 mb-4">Página não encontrada</p>
-                    <a href="/orders" className="text-blue-600 hover:text-blue-800 underline">
-                      Voltar para comandas
+                    <a href="/dashboard" className="text-primary-600 hover:text-primary-800 underline">
+                      Voltar para o dashboard
                     </a>
                   </div>
                 </div>

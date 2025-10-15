@@ -14,6 +14,8 @@ import { kitchenRoutes } from './modules/kitchen/kitchen.routes';
 import { reportsRoutes } from './modules/reports/reports.routes';
 import { adminRoutes } from './modules/admin/admin.routes';
 import { employeesRoutes } from './modules/employees/employees.routes';
+import { publicRoutes } from './modules/public/public.routes';
+import { notificationsRoutes } from './modules/notifications/notifications.routes';
 import ssePlugin from './plugins/sse';
 import logger from './shared/utils/logger';
 import { env } from './shared/config/env';
@@ -64,6 +66,7 @@ async function registerPlugins() {
         { name: 'reports', description: 'Relatórios' },
         { name: 'admin', description: 'Administração' },
         { name: 'employees', description: 'Funcionários' },
+        { name: 'notifications', description: 'Notificações em tempo real' },
       ],
     },
   });
@@ -144,11 +147,13 @@ async function registerRoutes() {
         reports: '/reports/*',
         admin: '/admin/*',
         employees: '/employees',
+        public: '/public/*',
       },
     };
   });
 
   // API Routes
+  await fastify.register(publicRoutes, { prefix: '/public' });
   await fastify.register(authRoutes, { prefix: '/auth' });
   await fastify.register(productsRoutes, { prefix: '/products' });
   await fastify.register(ordersRoutes, { prefix: '/orders' });
@@ -156,6 +161,7 @@ async function registerRoutes() {
   await fastify.register(reportsRoutes, { prefix: '/reports' });
   await fastify.register(adminRoutes, { prefix: '/admin' });
   await fastify.register(employeesRoutes, { prefix: '/employees' });
+  await fastify.register(notificationsRoutes, { prefix: '/notifications' });
 }
 
 // Start server

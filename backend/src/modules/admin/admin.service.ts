@@ -70,7 +70,7 @@ export class AdminService {
         include: {
           _count: {
             select: {
-              users: true,
+              userRoles: true,
               products: true,
               orders: true,
             },
@@ -100,7 +100,7 @@ export class AdminService {
     const establishment = await prisma.establishment.findUnique({
       where: { id },
       include: {
-        users: {
+        userRoles: {
           include: {
             user: {
               select: {

@@ -1,12 +1,17 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
+import { createClient } from '@supabase/supabase-js';
 import { UnauthorizedError, ForbiddenError } from '../utils/errors';
-import { verifyAccessToken, extractTokenFromHeader } from '../utils/jwt';
-import type { JWTPayload } from '../utils/jwt';
 import type { AuthUser, AuthUserRole } from '../types/auth';
 
+// Criar cliente Supabase
+const supabaseUrl = process.env.SUPABASE_URL || '';
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+
+const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
 /**
- * Middleware de autenticação JWT
- * Valida o access token e injeta os dados do usuário no request
+ * Middleware de autenticação Supabase
+ * Valida o token do Supabase e injeta os dados do usuário no request
  */
 export async function authMiddleware(
   request: FastifyRequest,
@@ -19,22 +24,64 @@ export async function authMiddleware(
       throw new UnauthorizedError('Token não fornecido');
     }
 
-    const token = extractTokenFromHeader(authHeader);
+    // Extrair token (formato: "Bearer <token>")
+    const token = authHeader.replace('Bearer ', '').trim();
 
     if (!token) {
       throw new UnauthorizedError('Formato de token inválido. Use: Bearer <token>');
     }
 
-    // Verificar e decodificar JWT
-    const decoded: JWTPayload = verifyAccessToken(token);
+    // Verificar token com Supabase
+    const { data: { user: supabaseUser }, error: authError } = await supabase.auth.getUser(token);
+
+    if (authError || !supabaseUser) {
+      console.error('[Auth Middleware] Erro ao validar token Supabase:', authError);
+      throw new UnauthorizedError('Token inválido ou expirado');
+    }
+
+
+    // Buscar dados do usuário na tabela users
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select(`
+        id,
+        email,
+        name,
+        active,
+        user_roles (
+          id,
+          role,
+          establishment_id,
+          permissions
+        )
+      `)
+      .eq('id', supabaseUser.id)
+      .single();
+
+    if (userError || !userData) {
+      console.error('[Auth Middleware] Erro ao buscar dados do usuário:', userError);
+      throw new UnauthorizedError('Usuário não encontrado');
+    }
+
+    if (!userData.active) {
+      throw new UnauthorizedError('Usuário desativado');
+    }
+
+    // Transformar user_roles para o formato esperado
+    const roles: AuthUserRole[] = userData.user_roles.map((ur: any) => ({
+      id: ur.id,
+      role: ur.role,
+      establishmentId: ur.establishment_id,
+      permissions: ur.permissions,
+    }));
 
     // Construir objeto de usuário autenticado
     const authUser: AuthUser = {
-      id: decoded.sub,
-      email: decoded.email,
-      name: decoded.name,
-      active: true, // JWT válido = usuário ativo
-      roles: decoded.roles,
+      id: userData.id,
+      email: userData.email,
+      name: userData.name,
+      active: userData.active,
+      roles,
     };
 
     // Determinar establishment_id do contexto
@@ -71,6 +118,7 @@ export async function authMiddleware(
     if (error instanceof UnauthorizedError || error instanceof ForbiddenError) {
       throw error;
     }
+    console.error('[Auth Middleware] Erro inesperado:', error);
     throw new UnauthorizedError(
       error instanceof Error ? error.message : 'Token inválido'
     );

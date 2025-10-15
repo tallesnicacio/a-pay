@@ -1,6 +1,6 @@
 # 📊 A-Pay - Status do Projeto
 
-**Última atualização**: 2025-10-12
+**Última atualização**: 2025-10-15
 
 ---
 
@@ -9,6 +9,17 @@
 Sistema completo de controle de pedidos multi-estabelecimento para food trucks e pracinhas.
 
 **Status Geral**: **100% Completo** ✅ (5 de 5 milestones) **PRONTO PARA PRODUÇÃO** 🚀
+
+### 🆕 ATUALIZAÇÕES RECENTES (15/10/2025)
+
+**Migração para Supabase Auth Completa:**
+- ✅ Autenticação integrada com Supabase Auth
+- ✅ Sistema de seleção de estabelecimentos
+- ✅ Configurações de módulos por estabelecimento (hasKitchen, hasOrders, hasReports)
+- ✅ Políticas RLS configuradas no Supabase
+- ✅ Scripts de sincronização de usuários
+- ✅ Tela de seleção de estabelecimentos com UI moderna
+- ✅ Validação de acesso aos módulos baseada em configuração
 
 ---
 
@@ -178,13 +189,14 @@ Nenhum! Todos os milestones foram concluídos. 🎉
 
 | Métrica | Quantidade |
 |---------|------------|
-| **Arquivos criados** | 119 |
-| **Linhas de código** | ~14.000 |
+| **Arquivos criados** | 125+ |
+| **Linhas de código** | ~15.000 |
 | **Endpoints API** | 27 |
-| **Páginas React** | 7 |
+| **Páginas React** | 8 |
 | **Componentes** | 15 |
 | **Stores Zustand** | 3 |
 | **Testes** | 52 |
+| **Scripts utilitários** | 5 |
 
 ### Features
 
@@ -247,11 +259,11 @@ Nenhum! Todos os milestones foram concluídos. 🎉
 
 ### Backend
 - **Framework**: Fastify 4.x
-- **Database**: PostgreSQL 15 (RLS)
+- **Database**: PostgreSQL 15 (Supabase)
 - **ORM**: Prisma 5.x
 - **Validation**: Zod
 - **Real-time**: SSE
-- **Auth**: Simplificado (→ Supabase em prod)
+- **Auth**: Supabase Auth (produção)
 
 ### Frontend
 - **Framework**: React 18
@@ -287,11 +299,14 @@ Nenhum! Todos os milestones foram concluídos. 🎉
 ## 🎨 FUNCIONALIDADES IMPLEMENTADAS
 
 ### 👤 Autenticação
-- ✅ Login com email (simplificado MVP)
+- ✅ Login com Supabase Auth (produção)
 - ✅ Logout
-- ✅ Seleção de estabelecimento
+- ✅ Seleção de estabelecimento com UI moderna
+- ✅ Multi-estabelecimento por usuário
 - ✅ Protected routes
-- ✅ Persist auth no localStorage
+- ✅ Persist auth via Supabase session
+- ✅ Sincronização automática de usuários
+- ✅ Políticas RLS configuradas
 
 ### 📋 Comandas
 - ✅ Criar comanda rápida (grid de produtos)
@@ -325,9 +340,12 @@ Nenhum! Todos os milestones foram concluídos. 🎉
 - ✅ Animações (fade, scale, slide)
 
 ### 🔒 Segurança
-- ✅ Row Level Security (RLS) preparado
-- ✅ Auth middleware
+- ✅ Row Level Security (RLS) no Supabase
+- ✅ Supabase Auth integrado
+- ✅ Auth middleware com token JWT
 - ✅ RBAC (role-based access control)
+- ✅ Controle de acesso por estabelecimento
+- ✅ Configurações de módulos por estabelecimento
 - ✅ Audit logs
 - ✅ Rate limiting
 - ✅ Helmet (security headers)
@@ -341,13 +359,26 @@ Nenhum! Todos os milestones foram concluídos. 🎉
    - Algumas redes bloqueiam SSE
    - Fallback: Polling a cada 30s implementado
 
-2. **RLS Policies**
-   - SQL precisa ser executado manualmente
-   - Ver: `backend/src/shared/middleware/rls.middleware.ts:51`
-
-3. **Drag and Drop**
+2. **Drag and Drop**
    - Implementado com botões "Avançar"
    - Drag nativo opcional para futuro
+
+## ✅ ISSUES RESOLVIDOS
+
+1. ~~**RLS Policies**~~ ✅
+   - Script SQL criado e executado no Supabase
+   - Políticas configuradas para todas as tabelas
+   - Ver: `backend/scripts/setup-rls-policies.sql`
+
+2. ~~**Sincronização de Usuários**~~ ✅
+   - Script de sincronização criado
+   - Usuários do Supabase Auth sincronizados com tabela users
+   - Ver: `backend/scripts/sync-users.ts`
+
+3. ~~**Seleção de Estabelecimento**~~ ✅
+   - Tela de seleção criada com UI moderna
+   - Suporte a múltiplos estabelecimentos por usuário
+   - Configurações de módulos carregadas corretamente
 
 ---
 
@@ -412,20 +443,23 @@ Nenhum! Todos os milestones foram concluídos. 🎉
 
 ## 🏆 CONQUISTAS
 
-- ✅ **14.000+ linhas** de código funcional
-- ✅ **119 arquivos** criados
+- ✅ **15.000+ linhas** de código funcional
+- ✅ **125+ arquivos** criados
 - ✅ **27 endpoints** API documentados
 - ✅ **15 componentes** React reutilizáveis
 - ✅ **52 testes** automatizados
 - ✅ **Real-time** funcionando com SSE
 - ✅ **PWA** instalável no celular
-- ✅ **Multi-tenant** com RLS preparado
+- ✅ **Multi-tenant** com RLS no Supabase
+- ✅ **Supabase Auth** integrado em produção
 - ✅ **Audit logs** em todas operações críticas
 - ✅ **Relatórios** visuais com gráficos
 - ✅ **Admin** para gerenciar establishments e users
 - ✅ **Offline support** com retry queue
 - ✅ **CI/CD** com GitHub Actions
-- ✅ **Deploy** pronto para Railway e Vercel
+- ✅ **Deploy** pronto para produção
+- ✅ **Configurações de módulos** por estabelecimento
+- ✅ **Tela de seleção** de estabelecimentos
 
 ---
 

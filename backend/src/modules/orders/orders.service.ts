@@ -66,6 +66,11 @@ export class OrdersService {
             email: true,
           },
         },
+        kitchenTickets: {
+          select: {
+            ticketNumber: true,
+          },
+        },
       },
       orderBy: {
         createdAt: 'desc',

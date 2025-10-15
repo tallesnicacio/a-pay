@@ -50,8 +50,12 @@ export const api = axios.create({
 
 // Request interceptor to add auth token
 api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('apay_access_token');
+  async (config) => {
+    // Pegar token do Supabase
+    const { supabase } = await import('../lib/supabase');
+    const { data: { session } } = await supabase.auth.getSession();
+
+    const token = session?.access_token;
     const establishmentId = localStorage.getItem('apay_establishment_id');
 
     if (token) {

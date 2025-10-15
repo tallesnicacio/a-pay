@@ -2,7 +2,13 @@
 export interface AuthUserRole {
   establishmentId: string | null;
   establishmentName?: string;
+  establishmentSlug?: string;
   role: 'admin_global' | 'owner' | 'user';
+  hasKitchen?: boolean;
+  hasOrders?: boolean;
+  hasReports?: boolean;
+  onlineOrdering?: boolean;
+  active?: boolean;
   permissions?: {
     modules: {
       orders: boolean;
@@ -16,13 +22,20 @@ export interface User {
   id: string;
   email: string;
   name: string;
+  active: boolean;
   roles: AuthUserRole[];
 }
 
 export interface Establishment {
   id: string;
   name: string;
+  slug?: string;
   role: string;
+  hasKitchen?: boolean;
+  hasOrders?: boolean;
+  hasReports?: boolean;
+  onlineOrdering?: boolean;
+  active?: boolean;
 }
 
 export interface AuthResponse {
@@ -78,6 +91,9 @@ export interface Order {
     name: string;
     email: string;
   };
+  kitchenTickets?: {
+    ticketNumber: number;
+  }[];
 }
 
 // Create Order
@@ -226,9 +242,9 @@ export interface EstablishmentDetails extends Establishment {
   hasReports: boolean;
   isActive: boolean;
   createdAt: string;
-  users?: UserRole[];
+  userRoles?: UserRole[];
   _count?: {
-    users: number;
+    userRoles: number;
     products: number;
     orders: number;
   };

@@ -8,15 +8,15 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children, requireRole }: ProtectedRouteProps) {
-  const { isAuthenticated, isLoading, verifyAuth, accessToken, user, currentEstablishment } = useAuthStore();
+  const { isAuthenticated, isLoading, verifyAuth, user, currentEstablishment } = useAuthStore();
   const location = useLocation();
 
   useEffect(() => {
-    // Só verifica auth se não estiver autenticado mas tiver token
-    if (!isAuthenticated && accessToken) {
+    // Verificar auth ao montar o componente
+    if (!isAuthenticated) {
       verifyAuth();
     }
-  }, [isAuthenticated, accessToken, verifyAuth]);
+  }, []);
 
   if (isLoading) {
     return (
@@ -33,15 +33,15 @@ export function ProtectedRoute({ children, requireRole }: ProtectedRouteProps) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
+  // admin_global tem acesso a tudo, não precisa de estabelecimento
+  const isAdminGlobal = user?.roles.some(r => r.role === 'admin_global');
+
+  if (isAdminGlobal) {
+    return <>{children}</>;
+  }
+
   // Verificar role se necessário
   if (requireRole && user) {
-    // admin_global tem acesso a tudo
-    const isAdminGlobal = user.roles.some(r => r.role === 'admin_global');
-
-    if (isAdminGlobal) {
-      return <>{children}</>;
-    }
-
     // Para outros roles, verificar no estabelecimento atual
     if (currentEstablishment) {
       const userRoleInEstablishment = user.roles.find(
@@ -65,16 +65,15 @@ export function ProtectedRoute({ children, requireRole }: ProtectedRouteProps) {
         );
       }
     } else {
-      // Sem estabelecimento selecionado
-      return (
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="text-center">
-            <h1 className="text-4xl font-bold text-yellow-600 mb-2">⚠️</h1>
-            <p className="text-gray-600">Nenhum estabelecimento selecionado</p>
-          </div>
-        </div>
-      );
+      // Sem estabelecimento selecionado, redirecionar para seleção
+      return <Navigate to="/select-establishment" state={{ from: location }} replace />;
     }
+  }
+
+  // Para rotas sem requireRole específico, verificar se precisa de estabelecimento
+  if (!currentEstablishment && user) {
+    // Se não é admin e não tem estabelecimento, redirecionar para seleção
+    return <Navigate to="/select-establishment" state={{ from: location }} replace />;
   }
 
   return <>{children}</>;

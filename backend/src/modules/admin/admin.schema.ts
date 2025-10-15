@@ -63,14 +63,8 @@ export type UpdateUserBody = z.infer<typeof updateUserSchema>;
  */
 export const createUserRoleSchema = z.object({
   userId: z.string().uuid('User ID inválido'),
-  establishmentId: z.string().uuid('Establishment ID inválido'),
-  role: z.enum([
-    'admin_global',
-    'owner',
-    'waiter',
-    'kitchen',
-    'cashier',
-  ]),
+  establishmentId: z.string().uuid('Establishment ID inválido').nullable(),
+  role: z.enum(['admin_global', 'owner', 'user']),
 });
 
 export type CreateUserRoleBody = z.infer<typeof createUserRoleSchema>;
@@ -79,13 +73,7 @@ export type CreateUserRoleBody = z.infer<typeof createUserRoleSchema>;
  * Schema para atualizar role de usuário
  */
 export const updateUserRoleSchema = z.object({
-  role: z.enum([
-    'admin_global',
-    'owner',
-    'waiter',
-    'kitchen',
-    'cashier',
-  ]),
+  role: z.enum(['admin_global', 'owner', 'user']),
 });
 
 export type UpdateUserRoleBody = z.infer<typeof updateUserRoleSchema>;

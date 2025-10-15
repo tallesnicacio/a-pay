@@ -4,6 +4,10 @@ import { reportsApi } from '../services/api';
 import { Layout } from '../components/common/Layout';
 import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
+import { Badge } from '../components/common/Badge';
+import { Input } from '../components/common/Input';
+import { Select } from '../components/common/Select';
+import { StatsCard } from '../components/common/StatsCard';
 import type { DailyReport, PeriodReport } from '../types';
 
 type ReportType = 'daily' | 'period';
@@ -104,7 +108,7 @@ export function ReportsPage() {
     return (
       <Layout>
         <div className="text-center py-12">
-          <p className="text-gray-600">Selecione um estabelecimento</p>
+          <p className="text-neutral-600">Selecione um estabelecimento</p>
         </div>
       </Layout>
     );
@@ -112,34 +116,46 @@ export function ReportsPage() {
 
   return (
     <Layout>
-      <div className="space-y-6">
+      <div className="space-y-6 animate-slide-in-up">
         {/* Header */}
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Relatórios</h2>
-          <p className="text-sm text-gray-600">{currentEstablishment.name}</p>
+          <h2 className="text-3xl font-bold text-neutral-900 font-display">Relatórios</h2>
+          <p className="text-neutral-500 mt-1">{currentEstablishment.name}</p>
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 border-b border-gray-200">
+        <div className="flex gap-2 border-b-2 border-neutral-200">
           <button
             onClick={() => setReportType('daily')}
-            className={`px-4 py-2 font-medium transition-colors ${
+            className={`px-4 py-3 font-semibold transition-all relative ${
               reportType === 'daily'
-                ? 'text-primary-600 border-b-2 border-primary-600'
-                : 'text-gray-600 hover:text-gray-900'
+                ? 'text-primary-600'
+                : 'text-neutral-600 hover:text-neutral-900'
             }`}
           >
-            Diário
+            <svg className="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            Relatório Diário
+            {reportType === 'daily' && (
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-600 rounded-full" />
+            )}
           </button>
           <button
             onClick={() => setReportType('period')}
-            className={`px-4 py-2 font-medium transition-colors ${
+            className={`px-4 py-3 font-semibold transition-all relative ${
               reportType === 'period'
-                ? 'text-primary-600 border-b-2 border-primary-600'
-                : 'text-gray-600 hover:text-gray-900'
+                ? 'text-primary-600'
+                : 'text-neutral-600 hover:text-neutral-900'
             }`}
           >
-            Por Período
+            <svg className="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            Relatório por Período
+            {reportType === 'period' && (
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-600 rounded-full" />
+            )}
           </button>
         </div>
 
@@ -148,75 +164,77 @@ export function ReportsPage() {
           <div className="space-y-4">
             {reportType === 'daily' ? (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Data
-                </label>
-                <input
+                <Input
                   type="date"
+                  label="Selecione a Data"
                   value={selectedDate}
                   onChange={(e) => setSelectedDate(e.target.value)}
-                  className="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  leftIcon={
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  }
                 />
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Data Inicial
-                  </label>
-                  <input
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <Input
                     type="date"
+                    label="Data Inicial"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    leftIcon={
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    }
                   />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Data Final
-                  </label>
-                  <input
+                  <Input
                     type="date"
+                    label="Data Final"
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    leftIcon={
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    }
+                  />
+                  <Select
+                    label="Agrupar por"
+                    value={groupBy}
+                    onChange={(value) => setGroupBy(value as 'day' | 'week' | 'month')}
+                    options={[
+                      { value: 'day', label: 'Dia' },
+                      { value: 'week', label: 'Semana' },
+                      { value: 'month', label: 'Mês' },
+                    ]}
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Agrupar por
-                  </label>
-                  <select
-                    value={groupBy}
-                    onChange={(e) =>
-                      setGroupBy(e.target.value as 'day' | 'week' | 'month')
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                  >
-                    <option value="day">Dia</option>
-                    <option value="week">Semana</option>
-                    <option value="month">Mês</option>
-                  </select>
-                </div>
-              </div>
-            )}
 
-            {reportType === 'period' && (
-              <div className="flex gap-2">
-                <Button
-                  onClick={() => handleExport('csv')}
-                  variant="outline"
-                  size="sm"
-                >
-                  Exportar CSV
-                </Button>
-                <Button
-                  onClick={() => handleExport('json')}
-                  variant="outline"
-                  size="sm"
-                >
-                  Exportar JSON
-                </Button>
+                <div className="flex gap-3 pt-2">
+                  <Button
+                    onClick={() => handleExport('csv')}
+                    variant="secondary"
+                    size="sm"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Exportar CSV
+                  </Button>
+                  <Button
+                    onClick={() => handleExport('json')}
+                    variant="secondary"
+                    size="sm"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Exportar JSON
+                  </Button>
+                </div>
               </div>
             )}
           </div>
@@ -225,8 +243,8 @@ export function ReportsPage() {
         {/* Loading */}
         {isLoading && (
           <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-primary-600 border-t-transparent"></div>
-            <p className="mt-2 text-gray-600">Carregando relatório...</p>
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-primary-600 border-t-transparent"></div>
+            <p className="mt-4 text-neutral-600 font-medium">Gerando relatório...</p>
           </div>
         )}
 
@@ -235,39 +253,58 @@ export function ReportsPage() {
           <div className="space-y-6">
             {/* Cards de resumo */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <Card padding="sm">
-                <p className="text-xs text-gray-600 mb-1">Total de Pedidos</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {dailyReport.sales.totalOrders}
-                </p>
-              </Card>
-              <Card padding="sm">
-                <p className="text-xs text-gray-600 mb-1">Faturamento</p>
-                <p className="text-2xl font-bold text-green-600">
-                  R$ {dailyReport.sales.totalRevenue.toFixed(2)}
-                </p>
-              </Card>
-              <Card padding="sm">
-                <p className="text-xs text-gray-600 mb-1">Total Pago</p>
-                <p className="text-2xl font-bold text-primary-600">
-                  R$ {dailyReport.sales.totalPaid.toFixed(2)}
-                </p>
-              </Card>
-              <Card padding="sm">
-                <p className="text-xs text-gray-600 mb-1">Ticket Médio</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  R$ {dailyReport.sales.averageTicket.toFixed(2)}
-                </p>
-              </Card>
+              <StatsCard
+                label="Pedidos"
+                value={dailyReport.sales.totalOrders}
+                icon={
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                  </svg>
+                }
+                color="primary"
+              />
+              <StatsCard
+                label="Faturamento"
+                value={`R$ ${dailyReport.sales.totalRevenue.toFixed(2)}`}
+                icon={
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                }
+                color="success"
+              />
+              <StatsCard
+                label="Total Pago"
+                value={`R$ ${dailyReport.sales.totalPaid.toFixed(2)}`}
+                icon={
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                }
+                color="info"
+              />
+              <StatsCard
+                label="Ticket Médio"
+                value={`R$ ${dailyReport.sales.averageTicket.toFixed(2)}`}
+                icon={
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                  </svg>
+                }
+                color="warning"
+              />
             </div>
 
             {/* Top produtos */}
             <Card>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Produtos Mais Vendidos
-              </h3>
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold text-neutral-900 font-display">
+                  Produtos Mais Vendidos
+                </h3>
+                <Badge variant="primary">{dailyReport.topProducts.length} produtos</Badge>
+              </div>
               {dailyReport.topProducts.length === 0 ? (
-                <p className="text-gray-600 text-center py-4">
+                <p className="text-neutral-600 text-center py-8">
                   Nenhum produto vendido hoje
                 </p>
               ) : (
@@ -275,24 +312,24 @@ export function ReportsPage() {
                   {dailyReport.topProducts.map((product, index) => (
                     <div
                       key={product.productId}
-                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                      className="flex items-center gap-4 p-4 bg-gradient-to-r from-neutral-50 to-transparent rounded-xl hover:from-neutral-100 transition-colors"
                     >
-                      <div className="flex items-center gap-3">
-                        <span className="text-lg font-bold text-gray-400">
-                          #{index + 1}
-                        </span>
-                        <div>
-                          <p className="font-medium text-gray-900">
-                            {product.productName}
-                          </p>
-                          <p className="text-sm text-gray-600">
-                            {product.quantity} unidades
-                          </p>
-                        </div>
+                      <div className="flex-shrink-0 w-10 h-10 bg-gradient-primary rounded-xl flex items-center justify-center font-bold text-white shadow-primary">
+                        {index + 1}
                       </div>
-                      <p className="font-semibold text-green-600">
-                        {formatCurrency(product.revenue)}
-                      </p>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-neutral-900 truncate">
+                          {product.productName}
+                        </p>
+                        <p className="text-sm text-neutral-500">
+                          {product.quantity} unidades vendidas
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-success-600 font-mono">
+                          {formatCurrency(product.revenue)}
+                        </p>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -301,44 +338,37 @@ export function ReportsPage() {
 
             {/* Métodos de pagamento */}
             <Card>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              <h3 className="text-xl font-bold text-neutral-900 font-display mb-6">
                 Métodos de Pagamento
               </h3>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <div className="text-center p-3 bg-gray-50 rounded-lg">
-                  <p className="text-sm text-gray-600 mb-1">Dinheiro</p>
-                  <p className="text-lg font-bold text-gray-900">
-                    R$ {dailyReport.sales.paymentMethods.cash.toFixed(2)}
-                  </p>
-                </div>
-                <div className="text-center p-3 bg-gray-50 rounded-lg">
-                  <p className="text-sm text-gray-600 mb-1">Crédito</p>
-                  <p className="text-lg font-bold text-gray-900">
-                    R$ {dailyReport.sales.paymentMethods.credit_card.toFixed(2)}
-                  </p>
-                </div>
-                <div className="text-center p-3 bg-gray-50 rounded-lg">
-                  <p className="text-sm text-gray-600 mb-1">Débito</p>
-                  <p className="text-lg font-bold text-gray-900">
-                    R$ {dailyReport.sales.paymentMethods.debit_card.toFixed(2)}
-                  </p>
-                </div>
-                <div className="text-center p-3 bg-gray-50 rounded-lg">
-                  <p className="text-sm text-gray-600 mb-1">PIX</p>
-                  <p className="text-lg font-bold text-gray-900">
-                    R$ {dailyReport.sales.paymentMethods.pix.toFixed(2)}
-                  </p>
-                </div>
+                {[
+                  { label: 'Dinheiro', value: dailyReport.sales.paymentMethods.cash, icon: '💵', color: 'success' },
+                  { label: 'Crédito', value: dailyReport.sales.paymentMethods.credit_card, icon: '💳', color: 'primary' },
+                  { label: 'Débito', value: dailyReport.sales.paymentMethods.debit_card, icon: '💳', color: 'info' },
+                  { label: 'PIX', value: dailyReport.sales.paymentMethods.pix, icon: '📱', color: 'warning' },
+                ].map((method) => (
+                  <div
+                    key={method.label}
+                    className="p-4 bg-gradient-to-br from-neutral-50 to-neutral-100 rounded-xl hover:shadow-md transition-shadow"
+                  >
+                    <div className="text-2xl mb-2">{method.icon}</div>
+                    <p className="text-sm text-neutral-600 mb-1">{method.label}</p>
+                    <p className="text-xl font-bold text-neutral-900 font-mono">
+                      R$ {method.value.toFixed(2)}
+                    </p>
+                  </div>
+                ))}
               </div>
             </Card>
 
             {/* Distribuição por hora */}
             {dailyReport.hourlyDistribution.length > 0 && (
               <Card>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                <h3 className="text-xl font-bold text-neutral-900 font-display mb-6">
                   Distribuição por Hora
                 </h3>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {dailyReport.hourlyDistribution.map((item) => {
                     const maxRevenue = Math.max(
                       ...dailyReport.hourlyDistribution.map((d) => d.revenue)
@@ -347,23 +377,23 @@ export function ReportsPage() {
 
                     return (
                       <div key={item.hour} className="flex items-center gap-4">
-                        <span className="text-sm text-gray-600 w-12">
+                        <Badge variant="neutral" className="w-16 justify-center font-mono">
                           {String(item.hour).padStart(2, '0')}:00
-                        </span>
-                        <div className="flex-1 flex items-center gap-2">
-                          <div className="flex-1 bg-gray-200 rounded-full h-8">
+                        </Badge>
+                        <div className="flex-1 flex items-center gap-3">
+                          <div className="flex-1 bg-neutral-200 rounded-full h-10 overflow-hidden shadow-inner">
                             <div
-                              className="bg-primary-600 h-8 rounded-full flex items-center justify-end px-2"
-                              style={{ width: `${percentage}%` }}
+                              className="bg-gradient-primary h-10 rounded-full flex items-center justify-end px-3 transition-all duration-500 shadow-primary"
+                              style={{ width: `${Math.max(percentage, 5)}%` }}
                             >
-                              {percentage > 20 && (
-                                <span className="text-xs font-medium text-white">
-                                  {item.orders} pedidos
+                              {percentage > 15 && (
+                                <span className="text-xs font-bold text-white">
+                                  {item.orders} {item.orders === 1 ? 'pedido' : 'pedidos'}
                                 </span>
                               )}
                             </div>
                           </div>
-                          <span className="text-sm font-medium text-gray-900 w-24 text-right">
+                          <span className="text-sm font-bold text-neutral-900 w-28 text-right font-mono">
                             R$ {item.revenue.toFixed(2)}
                           </span>
                         </div>
@@ -381,38 +411,54 @@ export function ReportsPage() {
           <div className="space-y-6">
             {/* Cards de resumo */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <Card padding="sm">
-                <p className="text-xs text-gray-600 mb-1">Total de Pedidos</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {periodReport.summary.totalOrders}
-                </p>
-              </Card>
-              <Card padding="sm">
-                <p className="text-xs text-gray-600 mb-1">Faturamento Total</p>
-                <p className="text-2xl font-bold text-green-600">
-                  R$ {periodReport.summary.totalRevenue.toFixed(2)}
-                </p>
-              </Card>
-              <Card padding="sm">
-                <p className="text-xs text-gray-600 mb-1">Total Pago</p>
-                <p className="text-2xl font-bold text-primary-600">
-                  R$ {periodReport.summary.totalPaid.toFixed(2)}
-                </p>
-              </Card>
-              <Card padding="sm">
-                <p className="text-xs text-gray-600 mb-1">Ticket Médio</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  R$ {periodReport.summary.averageTicket.toFixed(2)}
-                </p>
-              </Card>
+              <StatsCard
+                label="Pedidos"
+                value={periodReport.summary.totalOrders}
+                icon={
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                  </svg>
+                }
+                color="primary"
+              />
+              <StatsCard
+                label="Faturamento"
+                value={`R$ ${periodReport.summary.totalRevenue.toFixed(2)}`}
+                icon={
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                }
+                color="success"
+              />
+              <StatsCard
+                label="Total Pago"
+                value={`R$ ${periodReport.summary.totalPaid.toFixed(2)}`}
+                icon={
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                }
+                color="info"
+              />
+              <StatsCard
+                label="Ticket Médio"
+                value={`R$ ${periodReport.summary.averageTicket.toFixed(2)}`}
+                icon={
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                  </svg>
+                }
+                color="warning"
+              />
             </div>
 
             {/* Vendas por período */}
             <Card>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              <h3 className="text-xl font-bold text-neutral-900 font-display mb-6">
                 Vendas por {groupBy === 'day' ? 'Dia' : groupBy === 'week' ? 'Semana' : 'Mês'}
               </h3>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {periodReport.salesByPeriod.map((item) => {
                   const maxRevenue = Math.max(
                     ...periodReport.salesByPeriod.map((d) => d.totalRevenue)
@@ -421,23 +467,23 @@ export function ReportsPage() {
 
                   return (
                     <div key={item.period} className="flex items-center gap-4">
-                      <span className="text-sm text-gray-600 w-24">
+                      <Badge variant="primary" className="min-w-[100px] justify-center font-mono">
                         {item.period}
-                      </span>
-                      <div className="flex-1 flex items-center gap-2">
-                        <div className="flex-1 bg-gray-200 rounded-full h-8">
+                      </Badge>
+                      <div className="flex-1 flex items-center gap-3">
+                        <div className="flex-1 bg-neutral-200 rounded-full h-10 overflow-hidden shadow-inner">
                           <div
-                            className="bg-green-600 h-8 rounded-full flex items-center justify-end px-2"
-                            style={{ width: `${percentage}%` }}
+                            className="bg-gradient-to-r from-success-500 to-success-600 h-10 rounded-full flex items-center justify-end px-3 transition-all duration-500 shadow-success"
+                            style={{ width: `${Math.max(percentage, 5)}%` }}
                           >
-                            {percentage > 20 && (
-                              <span className="text-xs font-medium text-white">
-                                {item.totalOrders} pedidos
+                            {percentage > 15 && (
+                              <span className="text-xs font-bold text-white">
+                                {item.totalOrders} {item.totalOrders === 1 ? 'pedido' : 'pedidos'}
                               </span>
                             )}
                           </div>
                         </div>
-                        <span className="text-sm font-medium text-gray-900 w-28 text-right">
+                        <span className="text-sm font-bold text-neutral-900 w-32 text-right font-mono">
                           R$ {item.totalRevenue.toFixed(2)}
                         </span>
                       </div>
@@ -449,31 +495,34 @@ export function ReportsPage() {
 
             {/* Top produtos */}
             <Card>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Produtos Mais Vendidos
-              </h3>
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold text-neutral-900 font-display">
+                  Produtos Mais Vendidos
+                </h3>
+                <Badge variant="primary">{periodReport.topProducts.length} produtos</Badge>
+              </div>
               <div className="space-y-3">
                 {periodReport.topProducts.map((product, index) => (
                   <div
                     key={product.productId}
-                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                    className="flex items-center gap-4 p-4 bg-gradient-to-r from-neutral-50 to-transparent rounded-xl hover:from-neutral-100 transition-colors"
                   >
-                    <div className="flex items-center gap-3">
-                      <span className="text-lg font-bold text-gray-400">
-                        #{index + 1}
-                      </span>
-                      <div>
-                        <p className="font-medium text-gray-900">
-                          {product.productName}
-                        </p>
-                        <p className="text-sm text-gray-600">
-                          {product.quantity} unidades
-                        </p>
-                      </div>
+                    <div className="flex-shrink-0 w-10 h-10 bg-gradient-primary rounded-xl flex items-center justify-center font-bold text-white shadow-primary">
+                      {index + 1}
                     </div>
-                    <p className="font-semibold text-green-600">
-                      {formatCurrency(product.revenue)}
-                    </p>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-neutral-900 truncate">
+                        {product.productName}
+                      </p>
+                      <p className="text-sm text-neutral-500">
+                        {product.quantity} unidades vendidas
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-success-600 font-mono">
+                        {formatCurrency(product.revenue)}
+                      </p>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -481,30 +530,37 @@ export function ReportsPage() {
 
             {/* Métodos de pagamento */}
             <Card>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              <h3 className="text-xl font-bold text-neutral-900 font-display mb-6">
                 Métodos de Pagamento
               </h3>
               <div className="space-y-3">
                 {periodReport.paymentMethods.map((method) => (
                   <div
                     key={method.method}
-                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                    className="flex items-center justify-between p-4 bg-gradient-to-r from-neutral-50 to-transparent rounded-xl hover:from-neutral-100 transition-colors"
                   >
-                    <div>
-                      <p className="font-medium text-gray-900 capitalize">
-                        {method.method.replace('_', ' ')}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        {method.count} transações
-                      </p>
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center shadow-primary">
+                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="font-semibold text-neutral-900 capitalize">
+                          {method.method.replace('_', ' ')}
+                        </p>
+                        <p className="text-sm text-neutral-500">
+                          {method.count} {method.count === 1 ? 'transação' : 'transações'}
+                        </p>
+                      </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold text-gray-900">
+                      <p className="font-bold text-neutral-900 font-mono">
                         R$ {method.amount.toFixed(2)}
                       </p>
-                      <p className="text-sm text-gray-600">
+                      <Badge variant="success" size="sm">
                         {method.percentage.toFixed(1)}%
-                      </p>
+                      </Badge>
                     </div>
                   </div>
                 ))}
