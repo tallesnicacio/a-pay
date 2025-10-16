@@ -173,6 +173,11 @@ export function requireOwner() {
 /**
  * Middleware para verificar permissão específica
  * Deve ser usado APÓS authMiddleware
+ *
+ * PERMISSÕES AUTOMÁTICAS:
+ * - orders (comandas): acesso automático para funcionários
+ * - kitchen (cozinha): acesso automático para funcionários
+ * - reports (relatórios): requer permissão granular para funcionários
  */
 export function requirePermission(module: 'orders' | 'kitchen' | 'reports') {
   return async (request: FastifyRequest, reply: FastifyReply) => {
@@ -192,12 +197,21 @@ export function requirePermission(module: 'orders' | 'kitchen' | 'reports') {
       return;
     }
 
-    // User precisa ter permissão específica
+    // Funcionários (role: user) têm acesso automático a orders e kitchen
+    // Apenas reports requer permissão específica
     if (request.currentRole.role === 'user') {
-      const permissions = request.currentRole.permissions;
+      // Acesso automático para comandas e cozinha
+      if (module === 'orders' || module === 'kitchen') {
+        return;
+      }
 
-      if (!permissions || !permissions.modules[module]) {
-        throw new ForbiddenError(`Acesso negado ao módulo: ${module}`);
+      // Relatórios requer permissão granular
+      if (module === 'reports') {
+        const permissions = request.currentRole.permissions;
+
+        if (!permissions || !permissions.modules[module]) {
+          throw new ForbiddenError(`Acesso negado ao módulo: ${module}`);
+        }
       }
     }
   };
