@@ -43,9 +43,10 @@ export function Layout({ children }: LayoutProps) {
 
   // Permissões de módulos para usuários
   // Admin global sempre tem acesso total, mesmo sem estabelecimento selecionado
-  // Verificar tanto as permissões do usuário quanto se o estabelecimento tem o módulo habilitado
-  const hasOrdersAccess = isAdminGlobal || (currentEstablishment && currentEstablishment.hasOrders !== false && (isOwner || (isUser && userRole?.permissions?.modules?.orders)));
-  const hasKitchenAccess = isAdminGlobal || (currentEstablishment && currentEstablishment.hasKitchen === true && (isOwner || (isUser && userRole?.permissions?.modules?.kitchen)));
+  // Funcionários (role: user) têm acesso automático a Comandas e Cozinha se habilitados no estabelecimento
+  // Relatórios requer permissão específica para funcionários
+  const hasOrdersAccess = isAdminGlobal || (currentEstablishment && currentEstablishment.hasOrders !== false && (isOwner || isUser));
+  const hasKitchenAccess = isAdminGlobal || (currentEstablishment && currentEstablishment.hasKitchen === true && (isOwner || isUser));
   const hasReportsAccess = isAdminGlobal || (currentEstablishment && currentEstablishment.hasReports !== false && (isOwner || (isUser && userRole?.permissions?.modules?.reports)));
   const hasProductsAccess = isAdminGlobal || (currentEstablishment && isOwner);
   const hasEmployeesAccess = isAdminGlobal || (currentEstablishment && isOwner);
