@@ -80,10 +80,11 @@ export function KitchenPage() {
   );
 
   // Verificar permissões
+  // Funcionários têm acesso automático se o módulo estiver habilitado no estabelecimento
   const hasKitchenAccess =
     userRole?.role === 'admin_global' ||
     userRole?.role === 'owner' ||
-    (userRole?.role === 'user' && userRole?.permissions?.modules?.kitchen);
+    (userRole?.role === 'user' && currentEstablishment?.hasKitchen === true);
 
   if (!hasKitchenAccess) {
     return (
