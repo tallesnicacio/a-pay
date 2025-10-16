@@ -266,7 +266,8 @@ export function EstablishmentSwitcher() {
                   </div>
                 </button>
               );
-            })}
+            })
+            )}
           </div>
 
           <div className="p-3 bg-neutral-50 border-t-2 border-neutral-200">

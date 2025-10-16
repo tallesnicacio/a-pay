@@ -43,14 +43,14 @@ export function Button({
             variant === 'secondary' && !disabled,
           'hover:bg-neutral-50 active:bg-neutral-100':
             variant === 'secondary' && !disabled,
-          'focus:ring-neutral-200':
-            variant === 'secondary',
 
           // Ghost - Transparente
           'bg-transparent text-neutral-700 hover:bg-neutral-100 active:bg-neutral-200':
             variant === 'ghost' && !disabled,
+
+          // Focus ring para secondary e ghost
           'focus:ring-neutral-200':
-            variant === 'ghost',
+            variant === 'secondary' || variant === 'ghost',
 
           // Danger - Vermelho
           'bg-danger-500 text-white hover:bg-danger-600 active:bg-danger-700':
