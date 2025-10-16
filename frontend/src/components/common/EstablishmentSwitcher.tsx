@@ -2,13 +2,41 @@ import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
 import { Badge } from './Badge';
+import { api } from '../../services/api';
+import type { EstablishmentDetails } from '../../types';
 import clsx from 'clsx';
 
 export function EstablishmentSwitcher() {
   const [isOpen, setIsOpen] = useState(false);
+  const [allEstablishments, setAllEstablishments] = useState<EstablishmentDetails[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { user, currentEstablishment, setCurrentEstablishment } = useAuthStore();
   const navigate = useNavigate();
+
+  // Verificar se é admin global
+  const isAdminGlobal = user?.roles?.some(r => r.role === 'admin_global');
+
+  // Buscar todos os estabelecimentos se for admin global
+  useEffect(() => {
+    async function fetchAllEstablishments() {
+      if (!isAdminGlobal) return;
+
+      setIsLoading(true);
+      try {
+        const response = await api.admin.listEstablishments({});
+        setAllEstablishments(response.establishments);
+      } catch (error) {
+        console.error('Erro ao buscar estabelecimentos:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    if (isOpen && isAdminGlobal) {
+      fetchAllEstablishments();
+    }
+  }, [isOpen, isAdminGlobal]);
 
   // Fechar dropdown ao clicar fora
   useEffect(() => {
@@ -31,31 +59,59 @@ export function EstablishmentSwitcher() {
     return null;
   }
 
-  // Filtrar estabelecimentos do usuário (excluindo admin_global sem estabelecimento)
-  const userEstablishments = user.roles
-    .filter(role => role.establishmentId !== null)
-    .map(role => ({
-      id: role.establishmentId!,
-      name: role.establishmentName || 'Sem nome',
-      slug: role.establishmentSlug || '',
-      role: role.role,
-      hasKitchen: role.hasKitchen,
-      hasOrders: role.hasOrders,
-      hasReports: role.hasReports,
-      onlineOrdering: role.onlineOrdering,
-      active: role.active,
-    }))
-    // Remover duplicatas (caso usuário tenha múltiplas roles no mesmo estabelecimento)
-    .filter((est, index, self) =>
-      index === self.findIndex(e => e.id === est.id)
-    );
+  // Preparar lista de estabelecimentos
+  let establishments: Array<{
+    id: string;
+    name: string;
+    slug: string;
+    role?: string;
+    hasKitchen?: boolean;
+    hasOrders?: boolean;
+    hasReports?: boolean;
+    onlineOrdering?: boolean;
+    active?: boolean;
+  }> = [];
 
-  // Se só tem um estabelecimento, não mostrar o switcher
-  if (userEstablishments.length <= 1) {
+  if (isAdminGlobal) {
+    // Admin global vê todos os estabelecimentos
+    establishments = allEstablishments.map(est => ({
+      id: est.id,
+      name: est.name,
+      slug: est.slug,
+      role: 'admin_global',
+      hasKitchen: est.hasKitchen,
+      hasOrders: est.hasOrders,
+      hasReports: est.hasReports,
+      onlineOrdering: est.onlineOrdering,
+      active: est.active,
+    }));
+  } else {
+    // Usuários normais veem apenas seus estabelecimentos
+    establishments = user.roles
+      .filter(role => role.establishmentId !== null)
+      .map(role => ({
+        id: role.establishmentId!,
+        name: role.establishmentName || 'Sem nome',
+        slug: role.establishmentSlug || '',
+        role: role.role,
+        hasKitchen: role.hasKitchen,
+        hasOrders: role.hasOrders,
+        hasReports: role.hasReports,
+        onlineOrdering: role.onlineOrdering,
+        active: role.active,
+      }))
+      // Remover duplicatas
+      .filter((est, index, self) =>
+        index === self.findIndex(e => e.id === est.id)
+      );
+  }
+
+  // Se só tem um estabelecimento e não é admin, não mostrar o switcher
+  if (establishments.length <= 1 && !isAdminGlobal) {
     return null;
   }
 
-  const handleSwitchEstablishment = (establishment: typeof userEstablishments[0]) => {
+  const handleSwitchEstablishment = (establishment: typeof establishments[0]) => {
     setCurrentEstablishment(establishment);
     setIsOpen(false);
 
@@ -112,17 +168,26 @@ export function EstablishmentSwitcher() {
         <div className="absolute top-full right-0 mt-2 w-72 bg-white border-2 border-neutral-200 rounded-xl shadow-2xl z-50 overflow-hidden animate-scale-in">
           <div className="p-3 bg-gradient-bg border-b-2 border-neutral-200">
             <p className="text-sm font-semibold text-neutral-900">
-              Selecione um estabelecimento
+              {isAdminGlobal ? 'Todos os estabelecimentos' : 'Selecione um estabelecimento'}
             </p>
             <p className="text-xs text-neutral-500 mt-0.5">
-              {userEstablishments.length} disponíveis
+              {isLoading ? 'Carregando...' : `${establishments.length} disponíveis`}
             </p>
           </div>
 
           <div className="max-h-96 overflow-y-auto">
-            {userEstablishments.map((establishment) => {
+            {isLoading ? (
+              <div className="p-8 text-center">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-primary-600 border-t-transparent"></div>
+                <p className="text-sm text-neutral-500 mt-3">Carregando estabelecimentos...</p>
+              </div>
+            ) : establishments.length === 0 ? (
+              <div className="p-8 text-center">
+                <p className="text-sm text-neutral-500">Nenhum estabelecimento disponível</p>
+              </div>
+            ) : (
+              establishments.map((establishment) => {
               const isCurrent = establishment.id === currentEstablishment.id;
-              const userRole = user.roles.find(r => r.establishmentId === establishment.id);
 
               return (
                 <button
@@ -162,10 +227,20 @@ export function EstablishmentSwitcher() {
 
                       <div className="flex items-center gap-2 flex-wrap">
                         <Badge
-                          variant={userRole?.role === 'owner' ? 'success' : 'secondary'}
+                          variant={
+                            establishment.role === 'admin_global'
+                              ? 'primary'
+                              : establishment.role === 'owner'
+                                ? 'success'
+                                : 'secondary'
+                          }
                           size="sm"
                         >
-                          {userRole?.role === 'owner' ? 'Proprietário' : 'Funcionário'}
+                          {establishment.role === 'admin_global'
+                            ? 'Admin Global'
+                            : establishment.role === 'owner'
+                              ? 'Proprietário'
+                              : 'Funcionário'}
                         </Badge>
 
                         {/* Indicadores de módulos habilitados */}
