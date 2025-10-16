@@ -1,13 +1,20 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
 import { Badge } from '../components/common/Badge';
+import { api } from '../services/api';
+import type { EstablishmentDetails } from '../types';
 
 export function SelectEstablishmentPage() {
   const { user, currentEstablishment, setCurrentEstablishment, logout } = useAuthStore();
   const navigate = useNavigate();
+  const [allEstablishments, setAllEstablishments] = useState<EstablishmentDetails[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Verificar se é admin global
+  const isAdminGlobal = user?.roles?.some(r => r.role === 'admin_global');
 
   // Se já tem estabelecimento selecionado, redirecionar
   useEffect(() => {
@@ -23,15 +30,87 @@ export function SelectEstablishmentPage() {
     }
   }, [user, navigate]);
 
+  // Buscar todos os estabelecimentos se for admin global
+  useEffect(() => {
+    async function fetchAllEstablishments() {
+      if (!isAdminGlobal) return;
+
+      setIsLoading(true);
+      try {
+        const response = await api.admin.listEstablishments({});
+        setAllEstablishments(response.establishments);
+      } catch (error) {
+        console.error('Erro ao buscar estabelecimentos:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    if (isAdminGlobal) {
+      fetchAllEstablishments();
+    }
+  }, [isAdminGlobal]);
+
   if (!user) {
     return null;
   }
 
-  // Filtrar apenas roles com estabelecimento
-  const establishmentRoles = user.roles.filter(r => r.establishmentId !== null);
+  // Preparar lista de estabelecimentos
+  let establishments: Array<{
+    id: string;
+    name: string;
+    slug: string;
+    role: string;
+    hasKitchen?: boolean;
+    hasOrders?: boolean;
+    hasReports?: boolean;
+    onlineOrdering?: boolean;
+    active?: boolean;
+  }> = [];
+
+  if (isAdminGlobal) {
+    // Admin global vê todos os estabelecimentos
+    establishments = allEstablishments.map(est => ({
+      id: est.id,
+      name: est.name,
+      slug: est.slug,
+      role: 'admin_global',
+      hasKitchen: est.hasKitchen,
+      hasOrders: est.hasOrders,
+      hasReports: est.hasReports,
+      onlineOrdering: est.onlineOrdering,
+      active: est.active,
+    }));
+  } else {
+    // Filtrar apenas roles com estabelecimento
+    const establishmentRoles = user.roles.filter(r => r.establishmentId !== null);
+    establishments = establishmentRoles.map(role => ({
+      id: role.establishmentId!,
+      name: role.establishmentName || 'Sem nome',
+      slug: role.establishmentSlug || '',
+      role: role.role,
+      hasKitchen: role.hasKitchen,
+      hasOrders: role.hasOrders,
+      hasReports: role.hasReports,
+      onlineOrdering: role.onlineOrdering,
+      active: role.active,
+    }));
+  }
+
+  // Loading state para admin global
+  if (isAdminGlobal && isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-bg">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-primary-600 border-t-transparent mb-4"></div>
+          <p className="text-neutral-600">Carregando estabelecimentos...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Se não tem estabelecimentos, mostrar mensagem
-  if (establishmentRoles.length === 0) {
+  if (establishments.length === 0 && !isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-bg p-4">
         <Card padding="lg" className="max-w-md w-full shadow-2xl">
@@ -45,7 +124,9 @@ export function SelectEstablishmentPage() {
               Nenhum Estabelecimento
             </h2>
             <p className="text-neutral-600 mb-6">
-              Você não está vinculado a nenhum estabelecimento. Entre em contato com o administrador.
+              {isAdminGlobal
+                ? 'Nenhum estabelecimento cadastrado no sistema.'
+                : 'Você não está vinculado a nenhum estabelecimento. Entre em contato com o administrador.'}
             </p>
             <Button variant="outline" onClick={logout} fullWidth>
               Sair
@@ -56,38 +137,16 @@ export function SelectEstablishmentPage() {
     );
   }
 
-  // Se tem apenas um estabelecimento, selecionar automaticamente
-  if (establishmentRoles.length === 1 && establishmentRoles[0].establishmentId) {
-    const role = establishmentRoles[0];
-    setCurrentEstablishment({
-      id: role.establishmentId,
-      name: role.establishmentName || 'Estabelecimento',
-      slug: role.establishmentSlug || '',
-      role: role.role,
-      hasKitchen: role.hasKitchen,
-      hasOrders: role.hasOrders,
-      hasReports: role.hasReports,
-      onlineOrdering: role.onlineOrdering,
-      active: role.active,
-    });
+  // Se tem apenas um estabelecimento e não é admin, selecionar automaticamente
+  if (establishments.length === 1 && !isAdminGlobal) {
+    const establishment = establishments[0];
+    setCurrentEstablishment(establishment);
     return null;
   }
 
-  const handleSelectEstablishment = (role: typeof establishmentRoles[0]) => {
-    if (role.establishmentId) {
-      setCurrentEstablishment({
-        id: role.establishmentId,
-        name: role.establishmentName || 'Estabelecimento',
-        slug: role.establishmentSlug || '',
-        role: role.role,
-        hasKitchen: role.hasKitchen,
-        hasOrders: role.hasOrders,
-        hasReports: role.hasReports,
-        onlineOrdering: role.onlineOrdering,
-        active: role.active,
-      });
-      navigate('/dashboard', { replace: true });
-    }
+  const handleSelectEstablishment = (establishment: typeof establishments[0]) => {
+    setCurrentEstablishment(establishment);
+    navigate('/dashboard', { replace: true });
   };
 
   return (
@@ -103,46 +162,85 @@ export function SelectEstablishmentPage() {
             <span className="text-white font-bold text-3xl font-display">A</span>
           </div>
           <h1 className="text-4xl font-bold text-neutral-900 mb-2 font-display">
-            Selecione o Estabelecimento
+            {isAdminGlobal ? 'Escolha o Estabelecimento' : 'Selecione o Estabelecimento'}
           </h1>
           <p className="text-neutral-600">
-            Olá, <span className="font-semibold">{user.name}</span>! Escolha o estabelecimento para acessar.
+            Olá, <span className="font-semibold">{user.name}</span>!{' '}
+            {isAdminGlobal
+              ? 'Como admin global, você pode acessar qualquer estabelecimento.'
+              : 'Escolha o estabelecimento para acessar.'}
           </p>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
-          {establishmentRoles.map((role) => (
+          {establishments.map((establishment) => (
             <Card
-              key={role.id}
+              key={establishment.id}
               padding="lg"
               className="shadow-lg hover:shadow-2xl transition-all cursor-pointer hover:scale-105"
-              onClick={() => handleSelectEstablishment(role)}
+              onClick={() => handleSelectEstablishment(establishment)}
             >
               <div className="flex flex-col h-full">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
                     <h3 className="text-xl font-bold text-neutral-900 mb-1">
-                      {role.establishmentName || 'Sem nome'}
+                      {establishment.name}
                     </h3>
-                    {role.establishmentSlug && (
+                    {establishment.slug && (
                       <p className="text-sm text-neutral-500">
-                        @{role.establishmentSlug}
+                        @{establishment.slug}
                       </p>
                     )}
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between mt-auto">
-                  <Badge
-                    variant={role.role === 'owner' ? 'primary' : 'secondary'}
-                    size="sm"
-                  >
-                    {role.role === 'owner' ? 'Proprietário' : role.role === 'user' ? 'Funcionário' : role.role}
-                  </Badge>
+                <div className="space-y-3">
+                  {/* Indicadores de módulos */}
+                  {(establishment.hasKitchen || establishment.hasOrders || establishment.hasReports) && (
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {establishment.hasOrders && (
+                        <div className="flex items-center gap-1 text-xs text-neutral-600">
+                          <div className="w-2 h-2 bg-green-500 rounded-full" />
+                          Comandas
+                        </div>
+                      )}
+                      {establishment.hasKitchen && (
+                        <div className="flex items-center gap-1 text-xs text-neutral-600">
+                          <div className="w-2 h-2 bg-blue-500 rounded-full" />
+                          Cozinha
+                        </div>
+                      )}
+                      {establishment.hasReports && (
+                        <div className="flex items-center gap-1 text-xs text-neutral-600">
+                          <div className="w-2 h-2 bg-purple-500 rounded-full" />
+                          Relatórios
+                        </div>
+                      )}
+                    </div>
+                  )}
 
-                  <svg className="w-5 h-5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
+                  <div className="flex items-center justify-between mt-auto">
+                    <Badge
+                      variant={
+                        establishment.role === 'admin_global'
+                          ? 'primary'
+                          : establishment.role === 'owner'
+                            ? 'success'
+                            : 'secondary'
+                      }
+                      size="sm"
+                    >
+                      {establishment.role === 'admin_global'
+                        ? 'Admin Global'
+                        : establishment.role === 'owner'
+                          ? 'Proprietário'
+                          : 'Funcionário'}
+                    </Badge>
+
+                    <svg className="w-5 h-5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
                 </div>
               </div>
             </Card>
