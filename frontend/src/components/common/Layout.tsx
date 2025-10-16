@@ -4,6 +4,7 @@ import { useAuthStore } from '../../stores/authStore';
 import { useNotifications } from '../../hooks/useNotifications';
 import clsx from 'clsx';
 import { Badge } from './Badge';
+import { EstablishmentSwitcher } from './EstablishmentSwitcher';
 
 interface LayoutProps {
   children: ReactNode;
@@ -56,20 +57,20 @@ export function Layout({ children }: LayoutProps) {
       {/* Header */}
       <header className="bg-white border-b-2 border-neutral-200 sticky top-0 z-40 shadow-sm">
         <div className="px-4 py-4">
-          <div className="flex items-center justify-between">
-            {/* Logo e Estabelecimento */}
+          <div className="flex items-center justify-between gap-4">
+            {/* Logo */}
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-gradient-primary rounded-xl flex items-center justify-center shadow-primary">
                 <span className="text-white font-bold text-lg font-display">A</span>
               </div>
               <div>
                 <h1 className="text-xl font-bold text-neutral-900 font-display">A-Pay</h1>
-                {currentEstablishment && (
-                  <p className="text-xs text-neutral-500">
-                    {currentEstablishment.name}
-                  </p>
-                )}
               </div>
+            </div>
+
+            {/* Establishment Switcher */}
+            <div className="flex-1 flex justify-center">
+              <EstablishmentSwitcher />
             </div>
 
             {/* User menu */}
