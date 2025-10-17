@@ -12,7 +12,8 @@ RUN npm ci
 # Copiar código fonte
 COPY . .
 
-# Build da aplicação
+# Build da aplicação com NODE_ENV=production para usar .env.production
+ENV NODE_ENV=production
 RUN npm run build
 
 # Production stage - Nginx
