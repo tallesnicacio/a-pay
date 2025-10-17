@@ -26,6 +26,6 @@
     "experimentalDecorators": true,
     "types": ["node", "vitest/globals"]
   },
-  "include": ["src/**/*", "prisma/seed.ts"],
+  "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "**/*.spec.ts", "**/*.test.ts"]
 }
