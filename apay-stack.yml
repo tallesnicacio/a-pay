@@ -26,6 +26,10 @@ services:
         - "traefik.http.routers.apay-backend.entrypoints=websecure"
         - "traefik.http.routers.apay-backend.tls.certresolver=letsencryptresolver"
         - "traefik.http.services.apay-backend.loadbalancer.server.port=3001"
+        # Timeouts aumentados para banco externo (Supabase)
+        - "traefik.http.services.apay-backend.loadbalancer.responseForwarding.flushInterval=100ms"
+        - "traefik.http.services.apay-backend.loadbalancer.healthCheck.interval=30s"
+        - "traefik.http.services.apay-backend.loadbalancer.healthCheck.timeout=10s"
         # Redirect HTTP to HTTPS
         - "traefik.http.routers.apay-backend-http.rule=Host(`api.menutotem.com.br`)"
         - "traefik.http.routers.apay-backend-http.entrypoints=web"
