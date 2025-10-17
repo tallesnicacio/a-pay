@@ -50,24 +50,28 @@ services:
         max_attempts: 3
       labels:
         - "traefik.enable=true"
+        # Definir o serviço único para o frontend
+        - "traefik.http.services.apay-frontend.loadbalancer.server.port=80"
         # App subdomain
         - "traefik.http.routers.apay-app.rule=Host(`app.menutotem.com.br`)"
         - "traefik.http.routers.apay-app.entrypoints=websecure"
         - "traefik.http.routers.apay-app.tls.certresolver=letsencryptresolver"
-        - "traefik.http.services.apay-app.loadbalancer.server.port=80"
+        - "traefik.http.routers.apay-app.service=apay-frontend"
         # Admin subdomain (mesma aplicação)
         - "traefik.http.routers.apay-admin.rule=Host(`admin.menutotem.com.br`)"
         - "traefik.http.routers.apay-admin.entrypoints=websecure"
         - "traefik.http.routers.apay-admin.tls.certresolver=letsencryptresolver"
-        - "traefik.http.services.apay-admin.loadbalancer.server.port=80"
+        - "traefik.http.routers.apay-admin.service=apay-frontend"
         # Redirect HTTP to HTTPS for app
         - "traefik.http.routers.apay-app-http.rule=Host(`app.menutotem.com.br`)"
         - "traefik.http.routers.apay-app-http.entrypoints=web"
         - "traefik.http.routers.apay-app-http.middlewares=redirect-to-https"
+        - "traefik.http.routers.apay-app-http.service=apay-frontend"
         # Redirect HTTP to HTTPS for admin
         - "traefik.http.routers.apay-admin-http.rule=Host(`admin.menutotem.com.br`)"
         - "traefik.http.routers.apay-admin-http.entrypoints=web"
         - "traefik.http.routers.apay-admin-http.middlewares=redirect-to-https"
+        - "traefik.http.routers.apay-admin-http.service=apay-frontend"
 
 networks:
   network_public:
