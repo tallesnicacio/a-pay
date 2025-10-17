@@ -27,9 +27,9 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 # Expor porta
 EXPOSE 80
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD wget --quiet --tries=1 --spider http://localhost/ || exit 1
+# Health check (disabled for now - wget not available in nginx:alpine)
+# HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+#   CMD wget --quiet --tries=1 --spider http://localhost/ || exit 1
 
 # Nginx já inicia automaticamente
 CMD ["nginx", "-g", "daemon off;"]
