@@ -202,11 +202,11 @@ PORT=3001
 FRONTEND_URL=https://app.seudominio.com
 ADMIN_URL=https://admin.seudominio.com
 SUPABASE_URL=https://XXXXX.supabase.co
-SUPABASE_ANON_KEY=eyJ...
-SUPABASE_SERVICE_ROLE_KEY=eyJ...
-JWT_SECRET=...
-JWT_REFRESH_SECRET=...
-DATABASE_URL=postgresql://...
+SUPABASE_ANON_KEY=your-supabase-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
+JWT_SECRET=your-jwt-secret
+JWT_REFRESH_SECRET=your-jwt-refresh-secret
+DATABASE_URL=postgresql://user:password@host:port/database
 CORS_ORIGIN=https://app.seudominio.com,https://admin.seudominio.com
 ```
 
@@ -214,7 +214,7 @@ CORS_ORIGIN=https://app.seudominio.com,https://admin.seudominio.com
 ```env
 VITE_API_URL=https://api.seudominio.com
 VITE_SUPABASE_URL=https://XXXXX.supabase.co
-VITE_SUPABASE_ANON_KEY=eyJ...
+VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
 ```
 
 Ver template completo em [.env.production.example](.env.production.example)
